@@ -131,18 +131,16 @@ export const CalculatorScreen = () => {
                 </section>
             </div>
 
-            {/* Floating Action Button Dock */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-zinc-950 dark:via-zinc-950/80 dark:to-transparent z-40 md:relative md:bg-none md:p-0 md:mt-8 pointer-events-none flex justify-center">
-                <div className="w-full max-w-lg md:max-w-none pointer-events-auto">
-                    <Button
-                        size="lg"
-                        className="w-full shadow-2xl shadow-indigo-500/20 text-lg font-bold rounded-2xl h-16 active:scale-95 transition-transform"
-                        onClick={handleSubmit(onSubmit)}
-                    >
-                        <Save className="mr-2.5" size={22} strokeWidth={2.5} />
-                        {TEXTS.CALCULATOR.ACTION_BUTTON}
-                    </Button>
-                </div>
+            {/* Static Action Button (Scrolls with content) */}
+            <div className="mt-8">
+                <Button
+                    size="lg"
+                    className="w-full shadow-lg shadow-indigo-500/20 text-lg font-bold rounded-2xl h-14 md:h-16 active:scale-95 transition-transform"
+                    onClick={handleSubmit(onSubmit)}
+                >
+                    <Save className="mr-2.5" size={22} strokeWidth={2.5} />
+                    {TEXTS.CALCULATOR.ACTION_BUTTON}
+                </Button>
             </div>
 
         </motion.div>
