@@ -48,7 +48,7 @@ export const Layout = ({ children, activeTab, onTabChange }: LayoutProps) => {
 
             {/* Floating Glass Bottom Nav (Android 15 Style) */}
             <nav className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-6 right-6 z-30">
-                <div className="glass-panel mx-auto max-w-xs h-16 rounded-full flex justify-around items-center px-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-2xl shadow-black/20">
+                <div className="mx-auto w-full max-w-sm h-16 rounded-full flex justify-around items-center px-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-2xl shadow-black/20 gap-8">
                     {tabs.map((tab) => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
