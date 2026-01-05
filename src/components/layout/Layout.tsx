@@ -25,7 +25,7 @@ export const Layout = ({ children, activeTab, onTabChange }: LayoutProps) => {
     return (
         <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 transition-colors duration-300 font-sans">
             {/* Premium Glass Header */}
-            <header className="fixed top-0 left-0 right-0 z-40 h-[60px] bg-white/70 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-zinc-200/50 dark:border-white/10 flex items-center justify-between px-4 transition-all">
+            <header className="fixed top-0 left-0 right-0 z-40 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-xl border-b border-zinc-200/50 dark:border-white/10 flex items-center justify-between px-4 transition-all pt-[env(safe-area-inset-top)] h-[calc(60px+env(safe-area-inset-top))]">
                 <div className="flex items-center gap-3">
                     <img src={logoSrc} alt="Custos CyberMod" className="h-8 w-auto object-contain drop-shadow-sm opacity-90" />
                     {/* Title hidden on mobile to save space, visible on larger */}
@@ -42,12 +42,12 @@ export const Layout = ({ children, activeTab, onTabChange }: LayoutProps) => {
             </header>
 
             {/* Main Content with Top Padding for Header */}
-            <main className="flex-1 pt-[70px] pb-24 px-4 max-w-lg mx-auto w-full relative z-10">
+            <main className="flex-1 pt-[calc(80px+env(safe-area-inset-top))] pb-[calc(100px+env(safe-area-inset-bottom))] px-4 max-w-lg mx-auto w-full relative z-10">
                 {children}
             </main>
 
             {/* Floating Glass Bottom Nav (Android 15 Style) */}
-            <nav className="fixed bottom-6 left-6 right-6 z-30">
+            <nav className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-6 right-6 z-30">
                 <div className="glass-panel mx-auto max-w-xs h-16 rounded-full flex justify-around items-center px-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-2xl shadow-black/20">
                     {tabs.map((tab) => {
                         const Icon = tab.icon;
