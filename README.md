@@ -102,6 +102,3 @@ src/
 ├── types/           # Definições de tipos TypeScript
 └── utils/           # Funções utilitárias e formatadores
 ```
-
----
-Desenvolvido com ❤️ por Stuart.
