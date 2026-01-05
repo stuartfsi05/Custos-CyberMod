@@ -2,6 +2,8 @@ import { useSettings } from '../context/SettingsContext';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { TEXTS } from '../constants/texts';
+import { Box, Zap, ShieldAlert, Palette, Moon, Sun, Laptop } from 'lucide-react';
+import { clsx } from 'clsx';
 
 export const SettingsScreen = () => {
     const { settings, updateSetting } = useSettings();
@@ -9,7 +11,7 @@ export const SettingsScreen = () => {
     // Helper using any because the settings context types need to match string vs number updates properly
     // but input value is string. In a stricter app we would parse.
     const handleChange = (key: keyof typeof settings, value: string) => {
-        updateSetting(key, value);
+        updateSetting(key, value as any);
     };
 
     return (
@@ -21,9 +23,42 @@ export const SettingsScreen = () => {
                 <p className="text-zinc-500 text-sm">Configure seus custos base.</p>
             </header>
 
-            <div className="space-y-6">
+            <div className="space-y-8">
+                {/* Theme Section */}
                 <section>
-                    <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-500">Materiais</h2>
+                    <div className="flex items-center gap-2 mb-3 px-1">
+                        <Palette size={16} className="text-emerald-500" />
+                        <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Aparência</h2>
+                    </div>
+                    <Card className="flex items-center justify-between p-2">
+                        <div className="grid grid-cols-3 gap-2 w-full">
+                            {[
+                                { id: 'light', icon: Sun, label: 'Claro' },
+                                { id: 'dark', icon: Moon, label: 'Escuro' },
+                                { id: 'system', icon: Laptop, label: 'Sistema' }
+                            ].map(({ id, icon: Icon, label }) => (
+                                <button
+                                    key={id}
+                                    onClick={() => handleChange('theme', id)}
+                                    className={clsx(
+                                        "flex flex-col items-center gap-2 p-3 rounded-xl transition-all",
+                                        settings.theme === id
+                                            ? "bg-white dark:bg-zinc-700 shadow-sm text-emerald-500 ring-1 ring-black/5 dark:ring-white/10"
+                                            : "text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-600 dark:hover:text-zinc-300"
+                                    )}
+                                >
+                                    <Icon size={20} />
+                                    <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </Card>
+                </section>
+                <section>
+                    <div className="flex items-center gap-2 mb-3 px-1">
+                        <Box size={16} className="text-emerald-500" />
+                        <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Materiais</h2>
+                    </div>
                     <Card className="space-y-4">
                         <Input
                             label="Custo do Filamento (R$/kg)"
@@ -31,14 +66,17 @@ export const SettingsScreen = () => {
                             value={settings.materialCost}
                             onChange={(e) => handleChange('materialCost', e.target.value)}
                         />
-                        <p className="text-xs text-zinc-500 italic">
+                        <p className="text-xs text-zinc-400 font-medium ml-1">
                             Preço médio pago no rolo de 1kg.
                         </p>
                     </Card>
                 </section>
 
                 <section>
-                    <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-500">Operacional</h2>
+                    <div className="flex items-center gap-2 mb-3 px-1">
+                        <Zap size={16} className="text-emerald-500" />
+                        <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Operacional</h2>
+                    </div>
                     <Card className="space-y-4">
                         <Input
                             label="Custo Energia/Máquina (R$/h)"
@@ -56,7 +94,10 @@ export const SettingsScreen = () => {
                 </section>
 
                 <section>
-                    <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-500">Segurança</h2>
+                    <div className="flex items-center gap-2 mb-3 px-1">
+                        <ShieldAlert size={16} className="text-emerald-500" />
+                        <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Segurança</h2>
+                    </div>
                     <Card className="space-y-4">
                         <Input
                             label="Margem de Falha (Multiplicador)"
@@ -65,9 +106,11 @@ export const SettingsScreen = () => {
                             value={settings.failMargin}
                             onChange={(e) => handleChange('failMargin', e.target.value)}
                         />
-                        <p className="text-xs text-zinc-500">
-                            Padrão 1.10 = +10% de material e tempo para cobrir falhas eventuais.
-                        </p>
+                        <div className="bg-zinc-100 dark:bg-zinc-800/50 p-3 rounded-xl">
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                <span className="font-bold">Dica:</span> 1.10 adiciona 10% de margem no cálculo final para cobrir perdas.
+                            </p>
+                        </div>
                     </Card>
                 </section>
 

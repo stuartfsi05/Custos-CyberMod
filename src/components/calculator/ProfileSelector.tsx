@@ -1,6 +1,5 @@
 import { useSettings } from '../../context/SettingsContext';
-import { BottomSheet } from '../ui/BottomSheet';
-import { Button } from '../ui/Button'; // Assuming we have or will update Button
+import { Button } from '../ui/Button';
 import { Check, ChevronRight, Crown, Users, Truck, ShoppingBag, Zap } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useState } from 'react';
@@ -12,7 +11,10 @@ interface ProfileSelectorProps {
 
 export const ProfileSelector = ({ selectedProfileId, onSelect }: ProfileSelectorProps) => {
     const { settings } = useSettings();
-    const [open, setOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+
+    // Close dropdown when clicking outside would be ideal, but for now a simple toggle is enough.
+    // In a production app, we would use a hook like useOnClickOutside.
 
     const selectedTier = settings.tiers.find(t => t.id === selectedProfileId);
 
@@ -28,65 +30,70 @@ export const ProfileSelector = ({ selectedProfileId, onSelect }: ProfileSelector
     };
 
     return (
-        <BottomSheet
-            open={open}
-            onOpenChange={setOpen}
-            title="Selecione o Perfil"
-            description="Escolha a tabela de preços para este projeto."
-            trigger={
-                <button className="w-full flex items-center justify-between p-4 bg-zinc-100 dark:bg-zinc-900/50 backdrop-blur-md rounded-2xl border border-zinc-200 dark:border-zinc-800 transition-all active:scale-[0.98]">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-white dark:bg-zinc-800 rounded-full shadow-sm">
-                            {selectedTier ? getIcon(selectedTier.id) : <Crown size={18} />}
-                        </div>
-                        <div className="text-left">
-                            <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Perfil Atual</p>
-                            <p className="font-bold text-zinc-900 dark:text-white">
-                                {selectedTier ? selectedTier.name : "Selecione..."}
-                            </p>
-                        </div>
+        <div className="relative">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full flex items-center justify-between p-4 bg-zinc-100 dark:bg-zinc-900/50 backdrop-blur-md rounded-2xl border border-zinc-200 dark:border-zinc-800 transition-all active:scale-[0.98] hover:bg-zinc-50 dark:hover:bg-zinc-800 shadow-sm hover:shadow-md"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white dark:bg-zinc-800 rounded-full shadow-sm">
+                        {selectedTier ? getIcon(selectedTier.id) : <Crown size={18} />}
                     </div>
-                    <ChevronRight className="text-zinc-400" />
-                </button>
-            }
-        >
-            <div className="flex flex-col gap-2">
-                {settings.tiers.map((tier) => (
-                    <button
-                        key={tier.id}
-                        onClick={() => {
-                            if (navigator.vibrate) navigator.vibrate(10);
-                            onSelect(tier.id);
-                            setOpen(false);
-                        }}
-                        className={clsx(
-                            "group flex items-center justify-between p-4 rounded-xl border transition-all active:scale-[0.98]",
-                            selectedProfileId === tier.id
-                                ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20"
-                                : "border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900"
-                        )}
-                    >
-                        <div className="flex items-center gap-4">
-                            {getIcon(tier.id)}
-                            <div className="text-left">
-                                <span className={clsx("font-bold block", selectedProfileId === tier.id ? "text-indigo-700 dark:text-indigo-400" : "text-zinc-700 dark:text-zinc-300")}>
-                                    {tier.name}
-                                </span>
-                                {tier.badge && (
-                                    <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                                        {tier.badge}
-                                    </span>
+                    <div className="text-left">
+                        <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Perfil Atual</p>
+                        <p className="font-bold text-zinc-900 dark:text-white">
+                            {selectedTier ? selectedTier.name : "Selecione..."}
+                        </p>
+                    </div>
+                </div>
+                <ChevronRight
+                    className={clsx("text-zinc-400 transition-transform duration-300", isOpen && "rotate-90")}
+                />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isOpen && (
+                <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 ring-1 ring-black/5 dark:ring-white/5">
+                    <div className="p-2 flex flex-col gap-1 max-h-[300px] overflow-y-auto">
+                        {settings.tiers.map((tier) => (
+                            <button
+                                key={tier.id}
+                                onClick={() => {
+                                    if (navigator.vibrate) navigator.vibrate(10);
+                                    onSelect(tier.id);
+                                    setIsOpen(false);
+                                }}
+                                className={clsx(
+                                    "group flex items-center justify-between p-3 rounded-xl transition-all active:scale-[0.98]",
+                                    selectedProfileId === tier.id
+                                        ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400"
+                                        : "hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
                                 )}
-                            </div>
-                        </div>
-                        {selectedProfileId === tier.id && (
-                            <div className="p-1 bg-indigo-500 rounded-full text-white">
-                                <Check size={14} strokeWidth={3} />
-                            </div>
-                        )}
-                    </button>
-                ))}
-            </div>
-        </BottomSheet>
+                            >
+                                <div className="flex items-center gap-3">
+                                    {getIcon(tier.id)}
+                                    <div className="text-left">
+                                        <span className="font-bold block text-sm">
+                                            {tier.name}
+                                        </span>
+                                    </div>
+                                </div>
+                                {selectedProfileId === tier.id && (
+                                    <Check size={16} className="text-indigo-500" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Backdrop to close when clicking outside (simple solution) */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
+        </div>
     );
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -43,7 +43,7 @@ export const CalculatorScreen = () => {
 
     // Form Setup
     // useForm<InputType, Context, OutputType>
-    const { register, control, watch, formState: { errors }, handleSubmit, reset } = useForm<CalculatorFormValues, any, CalculatorSchemaType>({
+    const { register, watch, formState: { errors }, handleSubmit } = useForm<CalculatorFormValues, any, CalculatorSchemaType>({
         resolver: zodResolver(calculatorSchema),
         defaultValues: {
             partName: '',
@@ -96,41 +96,53 @@ export const CalculatorScreen = () => {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="p-4 space-y-6 pb-24" // pb-24 for bottom nav and floating action space
+            className="p-5 pb-32 max-w-lg mx-auto md:max-w-4xl" // Added max-w for desktop constraints
         >
-            <header className="mb-4">
-                <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">
+            <header className="mb-8 pt-2">
+                <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 tracking-tighter mb-2">
                     {TEXTS.APP.CALCULATOR}
                 </h1>
-                <p className="text-zinc-500 text-sm">Crie orçamentos precisos em segundos.</p>
+                <p className="text-zinc-500 dark:text-zinc-400 font-medium text-sm">Crie orçamentos precisos em segundos.</p>
             </header>
 
-            {/* Profile Selection */}
-            <ProfileSelector
-                selectedProfileId={selectedProfileId}
-                onSelect={setSelectedProfileId}
-            />
+            <div className="space-y-8">
+                {/* Profile Selection */}
+                <section>
+                    <ProfileSelector
+                        selectedProfileId={selectedProfileId}
+                        onSelect={setSelectedProfileId}
+                    />
+                </section>
 
-            {/* Inputs Form */}
-            <CalculatorForm register={register} errors={errors} />
+                {/* Inputs Form */}
+                <section className="bg-white dark:bg-zinc-900 rounded-[2rem] p-1 border border-zinc-100 dark:border-zinc-800 shadow-sm">
+                    <div className="p-4 md:p-6 space-y-6">
+                        <CalculatorForm register={register} errors={errors} />
+                    </div>
+                </section>
 
-            {/* Live Result Card */}
-            <PricingResult
-                tier={selectedTier}
-                qty={qty}
-                onQtyChange={setQty}
-            />
+                {/* Live Result Card */}
+                <section>
+                    <PricingResult
+                        tier={selectedTier}
+                        qty={qty}
+                        onQtyChange={setQty}
+                    />
+                </section>
+            </div>
 
-            {/* Floating Action Button for Save (Mobile Style) or fixed at bottom */}
-            <div className="fixed bottom-24 left-4 right-4 z-40 md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto">
-                <Button
-                    size="lg"
-                    className="w-full shadow-xl shadow-indigo-500/20 text-lg font-bold"
-                    onClick={handleSubmit(onSubmit)}
-                >
-                    <Save className="mr-2" size={20} />
-                    {TEXTS.CALCULATOR.ACTION_BUTTON}
-                </Button>
+            {/* Floating Action Button Dock */}
+            <div className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-zinc-950 dark:via-zinc-950/80 dark:to-transparent z-40 md:relative md:bg-none md:p-0 md:mt-8 pointer-events-none flex justify-center">
+                <div className="w-full max-w-lg md:max-w-none pointer-events-auto">
+                    <Button
+                        size="lg"
+                        className="w-full shadow-2xl shadow-indigo-500/20 text-lg font-bold rounded-2xl h-16 active:scale-95 transition-transform"
+                        onClick={handleSubmit(onSubmit)}
+                    >
+                        <Save className="mr-2.5" size={22} strokeWidth={2.5} />
+                        {TEXTS.CALCULATOR.ACTION_BUTTON}
+                    </Button>
+                </div>
             </div>
 
         </motion.div>

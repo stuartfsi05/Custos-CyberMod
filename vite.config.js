@@ -8,6 +8,20 @@ export default defineConfig({
   define: {
     'process.env': {}
   },
+  server: {
+    watch: {
+      ignored: ['**/android/**', '**/dist/**']
+    }
+  },
+  optimizeDeps: {
+    entries: [], // explicit entries or empty to force manual
+    include: []  // or just let it discover from index.html
+  },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    ignored: ['**/android/**', '**/dist/**']
+  },
   plugins: [
     react(),
     VitePWA({

@@ -1,12 +1,19 @@
 import { createContext, useContext } from 'react';
 
+export interface CostBreakdown {
+    material: number;
+    labor: number;
+    energy?: number; // Optional as it might be added later or calculated differently
+    shipping?: number;
+}
+
 export interface InventoryItem {
     id: number;
     partName: string;
     weightG: number;
     printTime: string | number;
     workTime: string | number;
-    costs: any; // We could import CostBreakdown from usePricingEngine if we export it, but 'any' is safe for storage data
+    costs: CostBreakdown;
     tierRetail: number;
     selectedTier: string;
     date: string;

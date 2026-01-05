@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useSettings, PricingTier } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
+import { PricingTier } from '../types/settings';
 import { timeToDecimal, parseNumber } from '../utils/formatters';
 
 interface PricingEngineInputs {
