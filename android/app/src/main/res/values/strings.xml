@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Custos CyberMod</string>
+    <string name="title_activity_main">Custos CyberMod</string>
+    <string name="package_name">com.cyb3rmod.app</string>
+    <string name="custom_url_scheme">com.cyb3rmod.app</string>
+</resources>

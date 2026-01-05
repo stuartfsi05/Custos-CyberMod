@@ -1,0 +1,45 @@
+export const TEXTS = {
+    APP: {
+        NAME: "Custos CyberMod",
+        CALCULATOR: "Calculadora",
+        INVENTORY: "Inventário & Histórico",
+        SETTINGS: "Ajustes",
+    },
+    CALCULATOR: {
+        PROJECT_NAME_LABEL: "Nome do Projeto",
+        PROJECT_NAME_PLACEHOLDER: "Ex: Capacete Cyberpunk",
+        PRINT_SECTION: "Impressão",
+        WEIGHT_LABEL: "Peso (g)",
+        TIME_LABEL: "Tempo (HH:MM)",
+        FINISH_SECTION: "Acabamento/Outros",
+        WORK_TIME_LABEL: "Mão de Obra (HH:MM)",
+        SHIPPING_LABEL: "Frete / Extras (R$)",
+        ACTION_BUTTON: "Cotar & Salvar",
+        RESULTS_TITLE: "Orçamento Calculado",
+        SELECT_PROFILE: "Selecione o Perfil",
+        PROFILE_PLACEHOLDER: "Toque para selecionar...",
+    },
+    INVENTORY: {
+        TAB_ACTIVE: "Ativos",
+        TAB_TRASH: "Lixeira",
+        EMPTY_STATE: "Nenhum item encontrado.",
+        METRIC_CONSUMPTION: "Consumo Total",
+        METRIC_VALUE: "Valor em Estoque",
+        TRASH_WARNING: "Itens na lixeira são removidos após 7 dias.",
+        BTN_CLEAR_TRASH: "Esvaziar Lixeira",
+    },
+    SETTINGS: {
+        MATERIALS_SECTION: "Materiais",
+        OPERATIONAL_SECTION: "Operacional",
+        SECURITY_SECTION: "Segurança",
+        MATERIAL_COST_LABEL: "Custo do Filamento (R$/kg)",
+        ENERGY_COST_LABEL: "Custo Energia/Máquina (R$/h)",
+        LABOR_COST_LABEL: "Custo Mão de Obra (R$/h)",
+        FAIL_MARGIN_LABEL: "Margem de Falha (Multiplicador)",
+    },
+    STATUS: {
+        PENDING: "Em Análise",
+        APPROVED: "Aprovado",
+        REJECTED: "Reprovado",
+    }
+};
