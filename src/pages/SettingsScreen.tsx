@@ -9,7 +9,7 @@ export const SettingsScreen = () => {
     // Helper using any because the settings context types need to match string vs number updates properly
     // but input value is string. In a stricter app we would parse.
     const handleChange = (key: keyof typeof settings, value: string) => {
-        updateSetting(key, Number(value));
+        updateSetting(key, value);
     };
 
     return (

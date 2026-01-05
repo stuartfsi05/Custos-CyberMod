@@ -14,15 +14,27 @@ import { Save } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // Schema Definition
+import { parseNumber } from '../utils/formatters';
+
+// ...
+
+// Schema Definition
 const calculatorSchema = z.object({
     partName: z.string().min(1, 'Nome do projeto é obrigatório'),
-    weightG: z.coerce.number().min(0, 'Peso inválido'),
-    printTime: z.string(), // We allow string for "HH:MM" format
+    weightG: z.union([z.string(), z.number()])
+        .transform((val) => parseNumber(String(val)))
+        .pipe(z.number().min(0, 'Peso inválido')),
+    printTime: z.string(),
     workTime: z.string(),
-    shippingCost: z.coerce.number().min(0)
+    shippingCost: z.union([z.string(), z.number()])
+        .transform((val) => parseNumber(String(val)))
+        .pipe(z.number().min(0))
 });
 
 export type CalculatorSchemaType = z.infer<typeof calculatorSchema>;
+
+// Form Input Values (can be strings or numbers)
+export type CalculatorFormValues = z.input<typeof calculatorSchema>;
 
 export const CalculatorScreen = () => {
     const { addToInventory } = useInventory();
@@ -30,7 +42,8 @@ export const CalculatorScreen = () => {
     const [qty, setQty] = useState(1);
 
     // Form Setup
-    const { register, control, watch, formState: { errors }, handleSubmit, reset } = useForm<CalculatorSchemaType>({
+    // useForm<InputType, Context, OutputType>
+    const { register, control, watch, formState: { errors }, handleSubmit, reset } = useForm<CalculatorFormValues, any, CalculatorSchemaType>({
         resolver: zodResolver(calculatorSchema),
         defaultValues: {
             partName: '',
@@ -42,7 +55,7 @@ export const CalculatorScreen = () => {
     });
 
     // Watch values for real-time calculation
-    const inputs = watch();
+    const inputs = watch(); // This returns CalculatorFormValues
 
     // Pricing Engine
     const { tiers, costs } = usePricingEngine({

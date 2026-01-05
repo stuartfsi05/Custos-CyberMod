@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useSettings, PricingTier } from '../context/SettingsContext';
-import { timeToDecimal } from '../utils/formatters';
+import { timeToDecimal, parseNumber } from '../utils/formatters';
 
 interface PricingEngineInputs {
     weightG: number | string;
@@ -37,10 +37,10 @@ export const usePricingEngine = ({ weightG, printTime, workTime, shippingCost = 
 
     const results = useMemo(() => {
         // 1. Parsing Inputs
-        const weight = typeof weightG === 'string' ? parseFloat(weightG) || 0 : weightG;
+        const weight = parseNumber(weightG);
         const printTimeHours = typeof printTime === 'string' ? timeToDecimal(printTime) : (printTime || 0);
         const workTimeHours = typeof workTime === 'string' ? timeToDecimal(workTime) : (workTime || 0);
-        const shipping = typeof shippingCost === 'string' ? parseFloat(shippingCost) || 0 : shippingCost;
+        const shipping = parseNumber(shippingCost);
 
         // 2. Safety Adjustments (Fail Margin)
         const adjWeight = weight * settings.failMargin;

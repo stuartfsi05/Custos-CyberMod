@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, ReactNode } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { parseNumber } from '../utils/formatters';
 
 export interface PricingTier {
     id: string;
@@ -50,7 +51,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     const updateSetting = (key: keyof Settings, value: any) => {
         setSettings((prev: Settings) => ({
             ...prev,
-            [key]: key === 'theme' || key === 'tiers' ? value : (parseFloat(value) || 0),
+            [key]: key === 'theme' || key === 'tiers' ? value : parseNumber(value),
         }));
     };
 
