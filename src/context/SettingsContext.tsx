@@ -15,6 +15,24 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     // Ideally, we'd migrate useLocalStorage to TS as well, but for now we expect it to return [any, func]
     const [settings, setSettings] = useLocalStorage('custos_settings', defaultSettings);
 
+    // Migration Effect: Ensure new fields (like tiers) exist if loading from old state
+    useEffect(() => {
+        if (!settings?.tiers || !Array.isArray(settings.tiers)) {
+            setSettings((prev: Settings) => ({
+                ...defaultSettings,
+                ...prev, // Keep existing values
+                tiers: defaultSettings.tiers // Force default tiers if missing
+            }));
+        }
+    }, [settings, setSettings]);
+
+    // Derived state for safety during render (fixes crash before useEffect runs)
+    const safeSettings: Settings = {
+        ...defaultSettings,
+        ...settings,
+        tiers: (settings?.tiers && Array.isArray(settings.tiers)) ? settings.tiers : defaultSettings.tiers
+    };
+
     const updateSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => {
         setSettings((prev: Settings) => ({
             ...prev,
@@ -22,22 +40,20 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         }));
     };
 
-    // Apply Theme Side-Effect
+    // ... theme effect ...
     useEffect(() => {
         const root = window.document.documentElement;
-        // Logic to handle system theme if needed, but for now strictly dark/light based on settings
-        // If system, we'd need a media query listener. keeping it simple as per original logic + types.
-        const isDark = settings.theme === 'dark';
+        const isDark = safeSettings.theme === 'dark'; // Use safeSettings
 
         if (isDark) {
             root.classList.add('dark');
         } else {
             root.classList.remove('dark');
         }
-    }, [settings.theme]);
+    }, [safeSettings.theme]);
 
     return (
-        <SettingsContext.Provider value={{ settings, updateSetting }}>
+        <SettingsContext.Provider value={{ settings: safeSettings, updateSetting }}>
             {children}
         </SettingsContext.Provider>
     );
