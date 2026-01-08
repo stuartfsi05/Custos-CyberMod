@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { usePricingEngine } from '../hooks/usePricingEngine';
 import { useInventory } from '../context/InventoryContext';
+import { useSettings } from '../context/SettingsContext';
 import { TEXTS } from '../constants/texts';
 import { CalculatorForm } from '../components/calculator/CalculatorForm';
 import { ProfileSelector } from '../components/calculator/ProfileSelector';
@@ -12,11 +13,10 @@ import { PricingResult } from '../components/calculator/PricingResult';
 import { Button } from '../components/ui/Button';
 import { Save } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { clsx } from 'clsx';
+import { parseNumber, formatCurrency } from '../utils/formatters';
 
-// Schema Definition
-import { parseNumber } from '../utils/formatters';
-
-// ...
+// ... (Schema parts - keeping as is if not in range, but range is large)
 
 // Schema Definition
 const calculatorSchema = z.object({
@@ -37,9 +37,21 @@ export type CalculatorSchemaType = z.infer<typeof calculatorSchema>;
 export type CalculatorFormValues = z.input<typeof calculatorSchema>;
 
 export const CalculatorScreen = () => {
+    const { settings } = useSettings();
     const { addToInventory } = useInventory();
-    const [selectedProfileId, setSelectedProfileId] = useState<string>('cost');
+    const [selectedProfileId, setSelectedProfileId] = useState<string>(settings.tiers[0]?.id || 'cost');
+    const [activeExtras, setActiveExtras] = useState<string[]>([]);
     const [qty, setQty] = useState(1);
+
+    // Sync activeExtras when profile changes
+    useEffect(() => {
+        const profile = settings.tiers.find(t => t.id === selectedProfileId);
+        if (profile?.defaultExtras) {
+            setActiveExtras(profile.defaultExtras);
+        } else {
+            setActiveExtras([]);
+        }
+    }, [selectedProfileId, settings.tiers]);
 
     // Form Setup
     // useForm<InputType, Context, OutputType>
@@ -62,7 +74,8 @@ export const CalculatorScreen = () => {
         weightG: inputs.weightG,
         printTime: inputs.printTime,
         workTime: inputs.workTime,
-        shippingCost: inputs.shippingCost
+        shippingCost: inputs.shippingCost,
+        activeExtras // Pass selected extras
     });
 
     const selectedTier = tiers.find(t => t.id === selectedProfileId) || tiers[0];
@@ -78,7 +91,8 @@ export const CalculatorScreen = () => {
             workTime: data.workTime,
             costs: costs,
             selectedTier: selectedProfileId,
-            tierRetail: selectedTier.value
+            tierRetail: selectedTier.value,
+            activeExtras
         });
 
         toast.success(`"${data.partName}" salvo no inventário!`);
@@ -118,6 +132,49 @@ export const CalculatorScreen = () => {
                 <section className="bg-white dark:bg-zinc-900 rounded-[2rem] p-1 border border-zinc-100 dark:border-zinc-800 shadow-sm">
                     <div className="p-4 md:p-6 space-y-6">
                         <CalculatorForm register={register} errors={errors} />
+                    </div>
+                </section>
+
+                {/* Extras Selection */}
+                <section>
+                    <div className="flex items-center gap-2 mb-3 px-1">
+                        <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Custos Variáveis</h2>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {settings.extras?.map(extra => {
+                            const isActive = activeExtras.includes(extra.id);
+                            return (
+                                <button
+                                    key={extra.id}
+                                    onClick={() => {
+                                        setActiveExtras(prev =>
+                                            isActive ? prev.filter(id => id !== extra.id) : [...prev, extra.id]
+                                        );
+                                    }}
+                                    className={clsx(
+                                        "p-3 rounded-xl border text-left transition-all relative overflow-hidden",
+                                        isActive
+                                            ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
+                                            : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400"
+                                    )}
+                                >
+                                    <div className="relative z-10">
+                                        <p className="text-xs font-bold mb-1">{extra.name}</p>
+                                        <p className="text-[10px] opacity-70">
+                                            +{formatCurrency(extra.price)}
+                                        </p>
+                                    </div>
+                                    {isActive && (
+                                        <div className="absolute right-2 top-2 w-2 h-2 rounded-full bg-emerald-500"></div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                        {(!settings.extras || settings.extras.length === 0) && (
+                            <div className="col-span-full text-center p-4 text-xs text-zinc-400 bg-zinc-50 dark:bg-zinc-900 rounded-xl">
+                                Configure consumíveis em Ajustes para vê-los aqui.
+                            </div>
+                        )}
                     </div>
                 </section>
 

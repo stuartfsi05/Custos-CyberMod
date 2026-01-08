@@ -15,28 +15,43 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     // Ideally, we'd migrate useLocalStorage to TS as well, but for now we expect it to return [any, func]
     const [settings, setSettings] = useLocalStorage('custos_settings', defaultSettings);
 
-    // Migration Effect: Ensure new fields (like tiers) exist if loading from old state
+    // Migration Effect: Ensure new fields (tiers, extras) exist
     useEffect(() => {
-        if (!settings?.tiers || !Array.isArray(settings.tiers)) {
+        let shouldUpdate = false;
+        const newSettings = { ...settings };
+
+        if (!newSettings.tiers || !Array.isArray(newSettings.tiers)) {
+            newSettings.tiers = defaultSettings.tiers;
+            shouldUpdate = true;
+        }
+
+        if (!newSettings.extras || !Array.isArray(newSettings.extras)) {
+            newSettings.extras = defaultSettings.extras;
+            shouldUpdate = true;
+        }
+
+        if (shouldUpdate) {
             setSettings((prev: Settings) => ({
                 ...defaultSettings,
-                ...prev, // Keep existing values
-                tiers: defaultSettings.tiers // Force default tiers if missing
+                ...prev,
+                tiers: newSettings.tiers,
+                extras: newSettings.extras
             }));
         }
     }, [settings, setSettings]);
 
-    // Derived state for safety during render (fixes crash before useEffect runs)
+    // Derived state for safety during render
     const safeSettings: Settings = {
         ...defaultSettings,
         ...settings,
-        tiers: (settings?.tiers && Array.isArray(settings.tiers)) ? settings.tiers : defaultSettings.tiers
+        tiers: (settings?.tiers && Array.isArray(settings.tiers)) ? settings.tiers : defaultSettings.tiers,
+        extras: (settings?.extras && Array.isArray(settings.extras)) ? settings.extras : defaultSettings.extras
     };
 
     const updateSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => {
         setSettings((prev: Settings) => ({
             ...prev,
-            [key]: key === 'theme' || key === 'tiers' ? value : parseNumber(value as string | number),
+            [key]: (key === 'theme' || key === 'tiers' || key === 'extras') ? value : parseNumber(value as string | number),
         }));
     };
 

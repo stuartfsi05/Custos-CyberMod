@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
-import { useInventory } from '../context/InventoryContext';
+import { useInventory, InventoryItem } from '../context/InventoryContext';
 import { InventoryItemCard } from '../components/inventory/InventoryItemCard';
+import { EditItemDialog } from '../components/inventory/EditItemDialog';
 import { formatCurrency } from '../utils/formatters';
 import { Search, Trash2, Archive } from 'lucide-react';
 import { TEXTS } from '../constants/texts';
@@ -10,8 +11,9 @@ export const InventoryScreen = () => {
     const { inventory, clearInventory } = useInventory();
     const [viewMode, setViewMode] = useState<'active' | 'trash'>('active');
     const [searchTerm, setSearchTerm] = useState('');
+    const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
 
-    // Memoized Filtering (Critique #7)
+    // ... (Memoized Filtering & Stats - keeping same logic)
     const filteredItems = useMemo(() => {
         return inventory
             .filter(item => {
@@ -106,7 +108,11 @@ export const InventoryScreen = () => {
                 <AnimatePresence mode='popLayout'>
                     {filteredItems.length > 0 ? (
                         filteredItems.map(item => (
-                            <InventoryItemCard key={item.id} item={item} />
+                            <InventoryItemCard
+                                key={item.id}
+                                item={item}
+                                onEdit={viewMode === 'active' ? setEditingItem : undefined}
+                            />
                         ))
                     ) : (
                         <motion.div
@@ -127,6 +133,12 @@ export const InventoryScreen = () => {
                     )}
                 </AnimatePresence>
             </div>
+
+            <EditItemDialog
+                item={editingItem}
+                open={!!editingItem}
+                onOpenChange={(open) => !open && setEditingItem(null)}
+            />
         </div>
     );
 };

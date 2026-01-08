@@ -8,12 +8,14 @@ interface PricingEngineInputs {
     printTime: string | number;
     workTime: string | number;
     shippingCost: number | string;
+    activeExtras?: string[]; // IDs of selected extras
 }
 
 interface CostBreakdown {
     material: number;
     machine: number;
     labor: number;
+    extras: number;
     base: number;
     shipping: number;
 }
@@ -33,7 +35,7 @@ interface PricingEngineResult {
     tiers: CalculatedTier[];
 }
 
-export const usePricingEngine = ({ weightG, printTime, workTime, shippingCost = 0 }: PricingEngineInputs): PricingEngineResult => {
+export const usePricingEngine = ({ weightG, printTime, workTime, shippingCost = 0, activeExtras = [] }: PricingEngineInputs): PricingEngineResult => {
     const { settings } = useSettings();
 
     const results = useMemo(() => {
@@ -57,8 +59,16 @@ export const usePricingEngine = ({ weightG, printTime, workTime, shippingCost = 
         // Labor: real_hours * labor_cost_per_hour
         const costLabor = workTimeHours * settings.laborCost;
 
+        // Extras Cost (Consumables)
+        // Only sum extras that exist in settings and are in the activeExtras list involved
+        const costExtras = settings.extras
+            ? settings.extras
+                .filter(e => activeExtras.includes(e.id))
+                .reduce((total, item) => total + item.price, 0)
+            : 0;
+
         // Base Cost
-        const baseCost = costMaterial + costMachine + costLabor;
+        const baseCost = costMaterial + costMachine + costLabor + costExtras;
 
         // 4. Tiers Calculation
         const calculatedTiers: CalculatedTier[] = settings.tiers.map(tier => ({
@@ -71,6 +81,7 @@ export const usePricingEngine = ({ weightG, printTime, workTime, shippingCost = 
                 material: costMaterial,
                 machine: costMachine,
                 labor: costLabor,
+                extras: costExtras,
                 base: baseCost,
                 shipping: shipping
             },
@@ -82,7 +93,7 @@ export const usePricingEngine = ({ weightG, printTime, workTime, shippingCost = 
             },
             tiers: calculatedTiers
         };
-    }, [weightG, printTime, workTime, shippingCost, settings]);
+    }, [weightG, printTime, workTime, shippingCost, activeExtras, settings]);
 
     return results;
 };

@@ -3,8 +3,10 @@ import { createContext, useContext } from 'react';
 export interface CostBreakdown {
     material: number;
     labor: number;
-    energy?: number; // Optional as it might be added later or calculated differently
-    shipping?: number;
+    machine: number;
+    extras: number;
+    base: number;
+    shipping: number;
 }
 
 export interface InventoryItem {
@@ -16,6 +18,7 @@ export interface InventoryItem {
     costs: CostBreakdown;
     tierRetail: number;
     selectedTier: string;
+    activeExtras?: string[];
     date: string;
     updatedAt?: string;
     status: 'pending' | 'approved' | 'rejected';
@@ -26,6 +29,7 @@ export interface InventoryContextType {
     addToInventory: (item: Omit<InventoryItem, 'id' | 'date' | 'updatedAt' | 'status'>) => void;
     removeFromInventory: (id: number) => void;
     updateStatus: (id: number, newStatus: 'pending' | 'approved' | 'rejected') => void;
+    updateInventoryItem: (id: number, updates: Partial<InventoryItem>) => void;
     clearInventory: () => void;
 }
 

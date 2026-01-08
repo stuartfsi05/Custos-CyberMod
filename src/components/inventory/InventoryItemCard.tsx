@@ -1,13 +1,14 @@
 import { formatCurrency } from '../../utils/formatters';
 import { InventoryItem, useInventory } from '../../context/InventoryContext';
-import { Trash2, ArchiveRestore, CheckCircle2, XCircle } from 'lucide-react';
+import { Trash2, ArchiveRestore, CheckCircle2, XCircle, Pencil } from 'lucide-react';
 import { motion, PanInfo, useAnimation } from 'framer-motion';
 
 interface InventoryItemCardProps {
     item: InventoryItem;
+    onEdit?: (item: InventoryItem) => void;
 }
 
-export const InventoryItemCard = ({ item }: InventoryItemCardProps) => {
+export const InventoryItemCard = ({ item, onEdit }: InventoryItemCardProps) => {
     const { removeFromInventory, updateStatus } = useInventory();
     const controls = useAnimation();
     const handleDragEnd = async (event: any, info: PanInfo) => {
@@ -66,7 +67,17 @@ export const InventoryItemCard = ({ item }: InventoryItemCardProps) => {
                         <span className="block font-black text-xl text-indigo-600 dark:text-indigo-400 tabular-nums">
                             {formatCurrency(item.tierRetail * (item.selectedTier === 'wholesale' ? 1 : 1))}
                         </span>
-                        <StatusBadge status={item.status} />
+                        <div className="flex items-center gap-2">
+                            {onEdit && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onEdit(item); }}
+                                    className="p-1 text-zinc-400 hover:text-indigo-500 transition-colors"
+                                >
+                                    <Pencil size={14} />
+                                </button>
+                            )}
+                            <StatusBadge status={item.status} />
+                        </div>
                     </div>
                 </div>
 

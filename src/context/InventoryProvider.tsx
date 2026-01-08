@@ -43,13 +43,20 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
         ));
     };
 
+    const updateInventoryItem = (id: number, updates: Partial<InventoryItem>) => {
+        vibrate(50);
+        setInventory((prev) => prev.map(item =>
+            item.id === id ? { ...item, ...updates, updatedAt: new Date().toISOString() } : item
+        ));
+    };
+
     const clearInventory = () => {
         vibrate(100);
         setInventory([]);
     };
 
     return (
-        <InventoryContext.Provider value={{ inventory, addToInventory, removeFromInventory, updateStatus, clearInventory }}>
+        <InventoryContext.Provider value={{ inventory, addToInventory, removeFromInventory, updateStatus, updateInventoryItem, clearInventory }}>
             {children}
         </InventoryContext.Provider>
     );
