@@ -1,40 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { toast } from 'sonner';
 import { usePricingEngine } from '../hooks/usePricingEngine';
 import { useInventory } from '../context/InventoryContext';
 import { useSettings } from '../context/SettingsContext';
 import { TEXTS } from '../constants/texts';
 import { CalculatorForm } from '../components/calculator/CalculatorForm';
+import { CustomerForm } from '../components/calculator/CustomerForm';
 import { ProfileSelector } from '../components/calculator/ProfileSelector';
 import { PricingResult } from '../components/calculator/PricingResult';
 import { Button } from '../components/ui/Button';
-import { Save } from 'lucide-react';
+import { Save, Box } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
-import { parseNumber, formatCurrency } from '../utils/formatters';
+import { formatCurrency } from '../utils/formatters';
+import { calculatorSchema, CalculatorSchemaType, CalculatorFormValues } from '../schemas/calculatorSchema';
 
-// ... (Schema parts - keeping as is if not in range, but range is large)
-
-// Schema Definition
-const calculatorSchema = z.object({
-    partName: z.string().min(1, 'Nome do projeto é obrigatório'),
-    weightG: z.union([z.string(), z.number()])
-        .transform((val) => parseNumber(String(val)))
-        .pipe(z.number().min(0, 'Peso inválido')),
-    printTime: z.string(),
-    workTime: z.string(),
-    shippingCost: z.union([z.string(), z.number()])
-        .transform((val) => parseNumber(String(val)))
-        .pipe(z.number().min(0))
-});
-
-export type CalculatorSchemaType = z.infer<typeof calculatorSchema>;
-
-// Form Input Values (can be strings or numbers)
-export type CalculatorFormValues = z.input<typeof calculatorSchema>;
+// Re-export types if other components use them from here, though they should switch to schema file.
+export type { CalculatorSchemaType, CalculatorFormValues };
 
 export const CalculatorScreen = () => {
     const { settings } = useSettings();
@@ -54,20 +38,31 @@ export const CalculatorScreen = () => {
     }, [selectedProfileId, settings.tiers]);
 
     // Form Setup
-    // useForm<InputType, Context, OutputType>
-    const { register, watch, formState: { errors }, handleSubmit } = useForm<CalculatorFormValues, any, CalculatorSchemaType>({
+    const { register, watch, setValue, formState: { errors }, handleSubmit } = useForm<CalculatorFormValues, any, CalculatorSchemaType>({
         resolver: zodResolver(calculatorSchema),
         defaultValues: {
             partName: '',
             weightG: 0,
             printTime: '',
             workTime: '',
-            shippingCost: 0
+            shippingCost: 0,
+            customerName: '',
+            customerDoc: '',
+            customerPhone: '',
+            customerEmail: '',
+            addressCep: '',
+            addressStreet: '',
+            addressNumber: '',
+            addressComplement: '',
+            addressNeighborhood: '',
+            addressCity: '',
+            addressState: '',
+            notes: ''
         }
     });
 
     // Watch values for real-time calculation
-    const inputs = watch(); // This returns CalculatorFormValues
+    const inputs = watch();
 
     // Pricing Engine
     const { tiers, costs } = usePricingEngine({
@@ -84,6 +79,11 @@ export const CalculatorScreen = () => {
     const handleSave = (data: CalculatorSchemaType) => {
         if (!selectedTier) return;
 
+        // Construct legacy address string if needed, or rely on structured data
+        const fullAddress = data.addressStreet
+            ? `${data.addressStreet}, ${data.addressNumber}${data.addressComplement ? ` - ${data.addressComplement}` : ''}, ${data.addressNeighborhood}, ${data.addressCity} - ${data.addressState}, CEP: ${data.addressCep}`
+            : undefined;
+
         addToInventory({
             partName: data.partName,
             weightG: data.weightG,
@@ -92,14 +92,26 @@ export const CalculatorScreen = () => {
             costs: costs,
             selectedTier: selectedProfileId,
             tierRetail: selectedTier.value,
-            activeExtras
+            activeExtras,
+            customerName: data.customerName,
+            customerDoc: data.customerDoc,
+            customerPhone: data.customerPhone,
+            customerEmail: data.customerEmail,
+            customerAddress: fullAddress, // Legacy support
+
+            // New Structured Fields
+            addressCep: data.addressCep,
+            addressStreet: data.addressStreet,
+            addressNumber: data.addressNumber,
+            addressComplement: data.addressComplement,
+            addressNeighborhood: data.addressNeighborhood,
+            addressCity: data.addressCity,
+            addressState: data.addressState,
+
+            notes: data.notes
         });
 
         toast.success(`"${data.partName}" salvo no inventário!`);
-
-        // Optional: Reset form or just the name? 
-        // Typically users calc multiple similar items, so maybe keep values.
-        // reset(); 
     };
 
     const onSubmit = (data: CalculatorSchemaType) => {
@@ -110,7 +122,7 @@ export const CalculatorScreen = () => {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="p-5 pb-32 max-w-lg mx-auto md:max-w-4xl" // Added max-w for desktop constraints
+            className="p-5 pb-32 max-w-lg mx-auto md:max-w-4xl"
         >
             <header className="mb-8 pt-2">
                 <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 tracking-tighter mb-2">
@@ -129,9 +141,15 @@ export const CalculatorScreen = () => {
                 </section>
 
                 {/* Inputs Form */}
-                <section className="bg-white dark:bg-zinc-900 rounded-[2rem] p-1 border border-zinc-100 dark:border-zinc-800 shadow-sm">
-                    <div className="p-4 md:p-6 space-y-6">
-                        <CalculatorForm register={register} errors={errors} />
+                <section>
+                    <div className="flex items-center gap-2 mb-3 px-1">
+                        <Box className="w-4 h-4 text-zinc-400" />
+                        <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Métricas do Projeto</h2>
+                    </div>
+                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-1 border border-zinc-100 dark:border-zinc-800 shadow-sm">
+                        <div className="p-4 md:p-6 space-y-6">
+                            <CalculatorForm register={register} errors={errors} />
+                        </div>
                     </div>
                 </section>
 
@@ -186,6 +204,9 @@ export const CalculatorScreen = () => {
                         onQtyChange={setQty}
                     />
                 </section>
+
+                {/* Customer & Notes Form */}
+                <CustomerForm register={register} errors={errors} setValue={setValue} />
             </div>
 
             {/* Static Action Button (Scrolls with content) */}

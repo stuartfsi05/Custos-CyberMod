@@ -12,6 +12,9 @@ import { clsx } from 'clsx';
 import { formatCurrency, parseNumber } from '../../utils/formatters';
 
 // Replicating schema from Calculator
+// Replicating schema from Calculator but extending for edit
+import { CustomerEditForm } from './CustomerEditForm';
+
 const editSchema = z.object({
     partName: z.string().min(1, 'Nome obrigatório'),
     weightG: z.union([z.string(), z.number()])
@@ -21,7 +24,23 @@ const editSchema = z.object({
     workTime: z.string(),
     shippingCost: z.union([z.string(), z.number()])
         .transform((val) => parseNumber(String(val)))
-        .pipe(z.number().min(0))
+        .pipe(z.number().min(0)),
+    // Customer Fields
+    customerName: z.string().optional(),
+    customerDoc: z.string().optional(),
+    customerPhone: z.string().optional(),
+    customerEmail: z.string().email('Email inválido').optional().or(z.literal('')),
+
+    // Address Fields (Structured)
+    addressCep: z.string().optional(),
+    addressStreet: z.string().optional(),
+    addressNumber: z.string().optional(),
+    addressComplement: z.string().optional(),
+    addressNeighborhood: z.string().optional(),
+    addressCity: z.string().optional(),
+    addressState: z.string().optional(),
+
+    notes: z.string().optional()
 });
 
 // Output type (after transform: numbers)
@@ -41,14 +60,26 @@ export const EditItemDialog = ({ item, open, onOpenChange }: EditItemDialogProps
     const [selectedProfileId, setSelectedProfileId] = useState('cost');
     const [activeExtras, setActiveExtras] = useState<string[]>([]);
 
-    const { register, watch, handleSubmit, setValue } = useForm<EditFormInput, undefined, EditFormOutput>({
+    const { register, watch, handleSubmit, setValue, formState: { errors } } = useForm<EditFormInput, undefined, EditFormOutput>({
         resolver: zodResolver(editSchema),
         defaultValues: {
             partName: '',
             weightG: 0,
             printTime: '',
             workTime: '',
-            shippingCost: 0
+            shippingCost: 0,
+            customerName: '',
+            customerDoc: '',
+            customerPhone: '',
+            customerEmail: '',
+            addressCep: '',
+            addressStreet: '',
+            addressNumber: '',
+            addressComplement: '',
+            addressNeighborhood: '',
+            addressCity: '',
+            addressState: '',
+            notes: ''
         }
     });
 
@@ -59,12 +90,29 @@ export const EditItemDialog = ({ item, open, onOpenChange }: EditItemDialogProps
             setValue('weightG', item.weightG);
             setValue('printTime', String(item.printTime));
             setValue('workTime', String(item.workTime));
-            // We assume item.costs.shipping is available or we default to 0. 
-            // NOTE: InventoryItem definition currently has shipping in 'costs.shipping'.
             setValue('shippingCost', item.costs.shipping || 0);
 
+            setValue('customerName', item.customerName || '');
+            setValue('customerDoc', item.customerDoc || '');
+            setValue('customerPhone', item.customerPhone || '');
+            setValue('customerEmail', item.customerEmail || '');
+
+            // Populate structured address fields if available
+            setValue('addressCep', item.addressCep || '');
+            setValue('addressStreet', item.addressStreet || '');
+            setValue('addressNumber', item.addressNumber || '');
+            setValue('addressComplement', item.addressComplement || '');
+            setValue('addressNeighborhood', item.addressNeighborhood || '');
+            setValue('addressCity', item.addressCity || '');
+            setValue('addressState', item.addressState || '');
+
+            setValue('notes', item.notes || '');
+
             setSelectedProfileId(item.selectedTier);
-            setActiveExtras(item.activeExtras || []);
+            setActiveExtras(item.activeExtras || activeExtras);
+            if (item.activeExtras) {
+                setActiveExtras(item.activeExtras);
+            }
         }
     }, [item, open, setValue]);
 
@@ -84,15 +132,37 @@ export const EditItemDialog = ({ item, open, onOpenChange }: EditItemDialogProps
     const onSave = (data: EditFormOutput) => {
         if (!item || !selectedTier) return;
 
+        // Construct legacy address string if needed, or rely on structured data
+        const fullAddress = data.addressStreet
+            ? `${data.addressStreet}, ${data.addressNumber}${data.addressComplement ? ` - ${data.addressComplement}` : ''}, ${data.addressNeighborhood}, ${data.addressCity} - ${data.addressState}, CEP: ${data.addressCep}`
+            : item.customerAddress; // Fallback to existing if not updated
+
         updateInventoryItem(item.id, {
             partName: data.partName,
-            weightG: data.weightG, // Already number
+            weightG: data.weightG,
             printTime: data.printTime,
             workTime: data.workTime,
             costs: costs,
             selectedTier: selectedProfileId,
             tierRetail: selectedTier.value,
-            activeExtras
+            activeExtras,
+
+            customerName: data.customerName,
+            customerDoc: data.customerDoc,
+            customerPhone: data.customerPhone,
+            customerEmail: data.customerEmail,
+            customerAddress: fullAddress,
+
+            // Structured Fields
+            addressCep: data.addressCep,
+            addressStreet: data.addressStreet,
+            addressNumber: data.addressNumber,
+            addressComplement: data.addressComplement,
+            addressNeighborhood: data.addressNeighborhood,
+            addressCity: data.addressCity,
+            addressState: data.addressState,
+
+            notes: data.notes
         });
 
         onOpenChange(false);
@@ -105,20 +175,22 @@ export const EditItemDialog = ({ item, open, onOpenChange }: EditItemDialogProps
             open={open}
             onOpenChange={onOpenChange}
             title="Editar Projeto"
-            description="Modifique os parâmetros para recalcular o preço."
+            description="Modifique os dados do pedido."
             className="h-[90%]"
         >
-            <div className="space-y-6 pb-8 overflow-y-auto max-h-[70vh] px-1">
+            <div className="space-y-6 pb-8 overflow-y-auto max-h-[75vh] px-1">
                 <form id="edit-form" onSubmit={handleSubmit(onSave)} className="space-y-4">
-                    <Input label="Nome do Projeto" {...register('partName')} />
+                    <Input label="Nome do Projeto" {...register('partName')} error={errors.partName?.message as string} />
                     <div className="grid grid-cols-2 gap-4">
-                        <Input label="Peso (g)" type="number" {...register('weightG')} />
+                        <Input label="Peso (g)" type="number" {...register('weightG')} error={errors.weightG?.message as string} />
                         <Input label="Tempo Impressão (h:m)" {...register('printTime')} />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <Input label="Tempo Pós (h:m)" {...register('workTime')} />
                         <Input label="Frete (R$)" type="number" {...register('shippingCost')} />
                     </div>
+
+                    <CustomerEditForm register={register} errors={errors} />
                 </form>
 
                 <div className="space-y-2">

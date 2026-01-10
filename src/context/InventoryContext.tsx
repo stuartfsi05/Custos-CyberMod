@@ -19,6 +19,22 @@ export interface InventoryItem {
     tierRetail: number;
     selectedTier: string;
     activeExtras?: string[];
+    customerName?: string;
+    customerDoc?: string;
+    customerPhone?: string;
+    customerEmail?: string;
+    customerAddress?: string; // Legacy / Full String
+
+    // Structured Address
+    addressCep?: string;
+    addressStreet?: string;
+    addressNumber?: string;
+    addressComplement?: string;
+    addressNeighborhood?: string;
+    addressCity?: string;
+    addressState?: string;
+
+    notes?: string;
     date: string;
     updatedAt?: string;
     status: 'pending' | 'approved' | 'rejected';
@@ -31,6 +47,7 @@ export interface InventoryContextType {
     updateStatus: (id: number, newStatus: 'pending' | 'approved' | 'rejected') => void;
     updateInventoryItem: (id: number, updates: Partial<InventoryItem>) => void;
     clearInventory: () => void;
+    clearTrash: () => void;
 }
 
 export const InventoryContext = createContext<InventoryContextType | undefined>(undefined);

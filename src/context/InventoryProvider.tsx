@@ -55,8 +55,13 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
         setInventory([]);
     };
 
+    const clearTrash = () => {
+        vibrate(100);
+        setInventory((prev) => prev.filter(item => item.status !== 'rejected'));
+    };
+
     return (
-        <InventoryContext.Provider value={{ inventory, addToInventory, removeFromInventory, updateStatus, updateInventoryItem, clearInventory }}>
+        <InventoryContext.Provider value={{ inventory, addToInventory, removeFromInventory, updateStatus, updateInventoryItem, clearInventory, clearTrash }}>
             {children}
         </InventoryContext.Provider>
     );

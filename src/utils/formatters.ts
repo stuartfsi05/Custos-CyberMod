@@ -58,3 +58,38 @@ export const parseCurrency = (str: string): number => {
     // If no comma, assume it's already using dot or is an integer
     return parseFloat(cleanStr) || 0;
 };
+export const formatCPFCNPJ = (value: string | undefined): string => {
+    if (!value) return '';
+    const digits = value.replace(/\D/g, '');
+
+    if (digits.length <= 11) {
+        // CPF: 000.000.000-00
+        return digits
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    } else {
+        // CNPJ: 00.000.000/0000-00
+        return digits
+            .replace(/^(\d{2})(\d)/, '$1.$2')
+            .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+            .replace(/\.(\d{3})(\d)/, '.$1/$2')
+            .replace(/(\d{4})(\d)/, '$1-$2');
+    }
+};
+
+export const formatPhone = (value: string | undefined): string => {
+    if (!value) return '';
+    const digits = value.replace(/\D/g, '');
+
+    if (digits.length === 11) {
+        // (00) 00000-0000
+        return digits.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+    } else if (digits.length === 10) {
+        // (00) 0000-0000
+        return digits.replace(/^(\d{2})(\d{4})(\d{4}).*/, '($1) $2-$3');
+    }
+
+    // Fallback if length is weird, just return digits or minimal formatting if possible
+    return digits;
+};

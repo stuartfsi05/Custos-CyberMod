@@ -15,7 +15,7 @@ export const SettingsScreen = () => {
     };
 
     return (
-        <div className="space-y-6 pb-24 animate-in slide-in-from-right duration-300">
+        <div className="space-y-6 pb-32 animate-in slide-in-from-right duration-300">
             <header className="mb-6">
                 <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-zinc-500 to-zinc-800 dark:from-zinc-200 dark:to-zinc-500">
                     {TEXTS.APP.SETTINGS}

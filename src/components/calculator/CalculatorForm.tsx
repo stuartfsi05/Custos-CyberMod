@@ -2,7 +2,7 @@ import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { Input } from '../ui/Input';
 import { TEXTS } from '../../constants/texts';
 import { Box, Clock, Weight, Hammer, Truck } from 'lucide-react';
-import { CalculatorFormValues } from '../../pages/CalculatorScreen';
+import { CalculatorFormValues } from '../../schemas/calculatorSchema';
 
 interface CalculatorFormProps {
     register: UseFormRegister<CalculatorFormValues>;
