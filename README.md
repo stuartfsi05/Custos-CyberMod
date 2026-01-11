@@ -1,53 +1,54 @@
 # 🖨️ Custos CyberMod
 
-> Ferramenta profissional para precificação de projetos de impressão 3D.
+> Ferramenta profissional para precificação de projetos de impressão 3D, com foco em mobilidade e precisão.
 
-**Custos CyberMod** é uma aplicação moderna e responsiva desenvolvida para auxiliar entusiastas e profissionais de impressão 3D a calcular custos de projetos com precisão, gerenciar um histórico de orçamentos e personalizar parâmetros de precificação.
+**Custos CyberMod** é uma aplicação moderna desenvolvida para transformar a maneira como você precifica seus serviços de impressão 3D. Com uma interface "Mobile-First" premium, ela permite calcular custos exatos, gerenciar margens de lucro dinâmicas e manter um histórico organizado dos seus projetos, tudo na palma da sua mão.
 
 ![Badge](https://img.shields.io/badge/Status-Active-emerald?style=for-the-badge)
-![Badge](https://img.shields.io/badge/License-Private-blue?style=for-the-badge)
+![Badge](https://img.shields.io/badge/Plataforma-Android%20%7C%20Web-blue?style=for-the-badge)
+![Badge](https://img.shields.io/badge/License-Private-purple?style=for-the-badge)
 
 ## ✨ Funcionalidades
 
-### 💰 Calculadora de Custos
-- **Cálculo Preciso**: Baseado em peso (g), tempo de impressão e tempo de pós-processamento.
-- **Perfis de Preço**:
-  - 🥇 **Custo**: Valor base (apenas materiais e energia).
-  - 👥 **Amigos**: Margem reduzida para conhecidos.
-  - 🏭 **Atacado**: Preços especiais para grandes volumes.
-  - 🛍️ **Varejo**: Margem padrão de mercado.
-  - ⚡ **Urgente**: Taxa de prioridade para entregas rápidas.
-- **Resultado em Tempo Real**: Visualize o preço final instantaneamente enquanto edita os parâmetros.
-- **Copiar Oçamento**: Copie o valor formatado para a área de transferência com um clique.
+### 💰 Calculadora Inteligente
+- **Precificação Detalhada**: Algoritmo que considera peso (g), tempo de impressão, pós-processamento e custos fixos/variáveis.
+- **Endereçamento Automático**: Integração com **ViaCEP** para preenchimento automático de endereços de clientes.
+- **Custos Variáveis**: Adicione custos extras como lixa, cola, ou verniz com um toque.
+- **Perfis de Preço Dinâmicos**:
+  - 🥇 **Custo Base**: Valor puro de materiais e energia.
+  - 👥 **Amigos**: Margem reduzida (ex: +10%).
+  - 🏭 **Atacado**: Preços competitivos para volume (ex: +25%).
+  - 🛍️ **Varejo**: Margem padrão de mercado (ex: +50%).
+  - ⚡ **Urgente**: Taxa de prioridade configurável (ex: +80%).
+- **Feedback Visual**: Cores e badges indicam claramente o nível de lucro de cada perfil.
 
-### 📦 Inventário (Histórico)
-- **Histórico de Projetos**: Salve todos os seus cálculos para referência futura.
-- **Status do Projeto**:
-  - 🟡 Pendente
-  - 🟢 Aprovado
-  - 🔴 Rejeitado (Lixeira)
-- **Gestão de Lixeira**: Recupere ou exclua permanentemente itens rejeitados.
-- **Busca Rápida**: Filtre projetos pelo nome instantaneamente.
+### 📦 Gestão de Inventário
+- **Histórico Completo**: Salve e organize todos os orçamentos gerados.
+- **Edição de Projetos**: Reabra projetos salvos para ajustar parâmetros, alterar custos extras ou atualizar preços.
+- **Status de Pedido**:
+  - 🟡 **Pendente**: Orçamento enviado.
+  - 🟢 **Aprovado**: Pronto para produção.
+  - 🔴 **Rejeitado**: Arquivado na lixeira (com recuperação possível).
+- **Busca Instantânea**: Encontre projetos pelo nome do cliente ou do modelo.
 
-### ⚙️ Configurações
-- **Parâmetros Personalizáveis**:
-  - Custo do Filamento (R$/kg)
-  - Custo de Energia (R$/h)
-  - Custo de Mão de Obra (R$/h)
-  - Margem de Falha (ex: 1.10 para 10% de segurança)
-- **Temas**: Suporte a modo Claro ☀️, Escuro 🌙 e Sistema 💻.
+### ⚙️ Configurações Globais
+- **Ajuste Fino**: Defina globalmente o custo do seu filamento (R$/kg), energia (kwh) e hora de trabalho.
+- **Perfis Editáveis**: Altere as margens de lucro de cada perfil de venda (Amigos, Varejo, etc.) conforme sua estratégia de negócio.
+- **Gestão de Extras**: Cadastre e gerencie a lista de materiais consumíveis (lixas, tintas, parafusos) disponíveis para seleção rápida.
+- **Temas**: Interface adaptável com modos Claro ☀️, Escuro 🌙 e Sistema 💻.
 
 ## 🛠️ Tecnologias Utilizadas
 
-O projeto foi construído com uma stack moderna focada em performance e experiência do usuário:
+Construído com o que há de mais moderno no ecossistema React para garantir performance nativa e UX fluida:
 
-- **Core**: [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Core**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- **Mobile Runtime**: [Capacitor 6](https://capacitorjs.com/) (Geração de APK Nativo)
 - **Estilização**: [TailwindCSS](https://tailwindcss.com/)
+- **Componentes UI**: [Vaul](https://vaul.emilkowal.ski/) (Drawers Nativos), [Sonner](https://sonner.emilkowal.ski/) (Toasts)
 - **Animações**: [Framer Motion](https://www.framer.com/motion/)
-- **Ícones**: [Lucide React](https://lucide.dev/)
-- **Validação**: [Zod](https://zod.dev/) + [React Hook Form](https://react-hook-form.com/)
-- **Mobile**: [Capacitor](https://capacitorjs.com/) (Suporte para Android)
+- **Gerenciamento de Estado**: React Context API + LocalStorage
+- **Formulários**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) (Validação Robusta)
+- **ícones**: [Lucide React](https://lucide.dev/)
 
 ## 🚀 Como Executar
 
