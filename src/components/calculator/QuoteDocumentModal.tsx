@@ -180,7 +180,7 @@ export const QuoteDocumentModal = ({ open, onClose, data }: QuoteDocumentModalPr
                             <div className="flex items-center gap-4">
                                 {branding.companyLogoUrl && (
                                     <img
-                                        src={branding.companyLogoUrl}
+                                        src={branding.companyLogoUrl.replace(/^\/(logo_)/, '$1')}
                                         alt={branding.companyName}
                                         className="h-12 w-12 object-contain rounded-xl bg-zinc-100 p-1.5 border border-zinc-200"
                                     />

@@ -278,7 +278,7 @@ export const SettingsScreen = () => {
                                     label="URL ou Caminho da Logo"
                                     value={settings.branding.companyLogoUrl}
                                     onChange={(e) => handleBrandingChange('companyLogoUrl', e.target.value)}
-                                    placeholder="/logo_dark.png"
+                                    placeholder="logo_dark.png"
                                 />
                             </div>
                             <Input

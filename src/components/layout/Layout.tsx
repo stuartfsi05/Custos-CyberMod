@@ -19,7 +19,7 @@ export const Layout = ({ children, activeTab, onTabChange }: LayoutProps) => {
         (settings.theme === 'system' &&
             typeof window !== 'undefined' &&
             window.matchMedia('(prefers-color-scheme: dark)').matches);
-    const logoSrc = isDark ? '/logo_dark.png' : '/logo_light.png';
+    const logoSrc = isDark ? 'logo_dark.png' : 'logo_light.png';
 
     const toggleTheme = () => {
         if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);

@@ -157,7 +157,7 @@ export const defaultBranding: CompanyBranding = {
     companyPhone: '',
     companyEmail: '',
     companyInstagram: '@cybermod3d',
-    companyLogoUrl: '/logo_light.png',
+    companyLogoUrl: 'logo_light.png',
     quoteValidityDays: 7,
     quoteTerms: 'Prazo de produção inicia após confirmação do pagamento do sinal (50%). Peças impressas em 3D podem apresentar leves marcas de camadas características do processo.'
 };

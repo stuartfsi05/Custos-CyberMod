@@ -11,7 +11,7 @@ interface NavigationDrawerProps {
 export const NavigationDrawer = ({ isOpen, onClose, onNavigate }: NavigationDrawerProps) => {
     const { settings, updateSetting } = useSettings();
     const isDark = settings.theme === 'dark' || (settings.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    const logoSrc = isDark ? '/logo_dark.png' : '/logo_light.png';
+    const logoSrc = isDark ? 'logo_dark.png' : 'logo_light.png';
 
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
