@@ -1,4 +1,17 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
+
+function isQuotaExceededError(error: unknown): boolean {
+    if (error instanceof DOMException) {
+        return (
+            error.name === 'QuotaExceededError' ||
+            error.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+            error.code === 22 ||
+            error.code === 1014
+        );
+    }
+    return false;
+}
 
 /**
  * Hook customizado para persistir estado no LocalStorage.
@@ -37,6 +50,9 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
             }
         } catch (error) {
             console.warn(`Error setting localStorage key “${key}”:`, error);
+            if (isQuotaExceededError(error)) {
+                toast.error('Limite de armazenamento local atingido! Exporte um Backup JSON no Financeiro e limpe itens antigos.');
+            }
         }
     };
 

@@ -20,7 +20,16 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    ignored: ['**/android/**', '**/dist/**']
+    ignored: ['**/android/**', '**/dist/**'],
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-ui': ['framer-motion', 'lucide-react', 'sonner', 'vaul'],
+          'vendor-forms': ['react-hook-form', 'zod', '@hookform/resolvers']
+        }
+      }
+    }
   },
   plugins: [
     react(),

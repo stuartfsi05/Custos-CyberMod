@@ -1,12 +1,17 @@
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { InventoryContext, InventoryItem } from './InventoryContext';
+import {
+    InventoryContext,
+    InventoryItem,
+    InventoryItemStatus,
+    NewInventoryItemInput,
+    PaymentStatus
+} from './InventoryContext';
 import { useInventoryCleanup } from '../hooks/useInventoryCleanup';
 
 export const InventoryProvider = ({ children }: { children: ReactNode }) => {
     const [inventory, setInventory] = useLocalStorage<InventoryItem[]>('custos_inventory', []);
 
-    // Encapsulated cleanup logic
     useInventoryCleanup(inventory, setInventory);
 
     const vibrate = (pattern: number | number[] = 50) => {
@@ -15,18 +20,25 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const addToInventory = (item: Omit<InventoryItem, 'id' | 'date' | 'updatedAt' | 'status'>) => {
-        vibrate([50, 50, 50]); // Success pattern
+    const addToInventory = (item: NewInventoryItemInput) => {
+        vibrate([50, 50, 50]);
         setInventory((prev) => [
             {
                 ...item,
+                qty: item.qty && item.qty > 0 ? item.qty : 1,
+                paymentStatus: item.paymentStatus ?? 'unpaid',
                 id: Date.now(),
                 date: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
-                status: 'pending' // pending, approved, rejected
+                status: item.status ?? 'pending'
             },
             ...prev
         ]);
+    };
+
+    const replaceInventory = (items: InventoryItem[]) => {
+        vibrate(50);
+        setInventory(Array.isArray(items) ? items : []);
     };
 
     const removeFromInventory = (id: number) => {
@@ -34,12 +46,22 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
         setInventory((prev) => prev.filter(item => item.id !== id));
     };
 
-    const updateStatus = (id: number, newStatus: 'pending' | 'approved' | 'rejected') => {
-        if (newStatus === 'approved') vibrate([50, 80]); // Double tap for approve
-        else vibrate(50); // Single for others
+    const updateStatus = (id: number, newStatus: InventoryItemStatus) => {
+        if (newStatus === 'approved' || newStatus === 'completed' || newStatus === 'delivered') {
+            vibrate([50, 80]);
+        } else {
+            vibrate(50);
+        }
 
         setInventory((prev) => prev.map(item =>
             item.id === id ? { ...item, status: newStatus, updatedAt: new Date().toISOString() } : item
+        ));
+    };
+
+    const updatePaymentStatus = (id: number, paymentStatus: PaymentStatus) => {
+        vibrate(30);
+        setInventory((prev) => prev.map(item =>
+            item.id === id ? { ...item, paymentStatus, updatedAt: new Date().toISOString() } : item
         ));
     };
 
@@ -61,7 +83,19 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <InventoryContext.Provider value={{ inventory, addToInventory, removeFromInventory, updateStatus, updateInventoryItem, clearInventory, clearTrash }}>
+        <InventoryContext.Provider
+            value={{
+                inventory,
+                addToInventory,
+                replaceInventory,
+                removeFromInventory,
+                updateStatus,
+                updatePaymentStatus,
+                updateInventoryItem,
+                clearInventory,
+                clearTrash
+            }}
+        >
             {children}
         </InventoryContext.Provider>
     );

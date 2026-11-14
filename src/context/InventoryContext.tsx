@@ -1,13 +1,25 @@
 import { createContext, useContext } from 'react';
+import type { CostBreakdown } from '../types/settings';
+import type {
+    AdditionalMaterialInput,
+    SelectedAuxiliaryItem,
+    TaxIncidenceMode,
+    TaxPassThroughMode,
+    DiscountType
+} from '../hooks/usePricingEngine';
+import type { QuoteLineItem } from '../components/calculator/QuoteDocumentModal';
 
-export interface CostBreakdown {
-    material: number;
-    labor: number;
-    machine: number;
-    extras: number;
-    base: number;
-    shipping: number;
-}
+export type { CostBreakdown };
+
+export type InventoryItemStatus =
+    | 'pending'
+    | 'approved'
+    | 'printing'
+    | 'completed'
+    | 'delivered'
+    | 'rejected';
+
+export type PaymentStatus = 'unpaid' | 'half' | 'paid';
 
 export interface InventoryItem {
     id: number;
@@ -19,6 +31,41 @@ export interface InventoryItem {
     tierRetail: number;
     selectedTier: string;
     activeExtras?: string[];
+    qty?: number;
+    printerId?: string;
+    filamentId?: string;
+    marketplaceId?: string;
+    paymentStatus?: PaymentStatus;
+    netProfit?: number;
+    markupPercent?: number;
+    costMode?: 'per_piece' | 'per_batch';
+    packagingCost?: number;
+    hardwareCost?: number;
+    setupMinutes?: number;
+    postMinutes?: number;
+    failPercent?: number;
+    manualMaterialName?: string;
+    materialCostPerKg?: number;
+    additionalMaterials?: AdditionalMaterialInput[];
+    manualPrinterName?: string;
+    powerWatts?: number;
+    machineValue?: number;
+    kwhRate?: number;
+    lifespanHours?: number;
+    maintenancePercent?: number;
+    laborRatePerHour?: number;
+    auxiliaryItems?: SelectedAuxiliaryItem[];
+    commissionPercent?: number;
+    fixedFee?: number;
+    taxPercent?: number;
+    taxMode?: TaxIncidenceMode;
+    taxPassThrough?: TaxPassThroughMode;
+    discountType?: DiscountType;
+    discountValue?: number;
+    quoteItems?: QuoteLineItem[];
+    stockDeducted?: boolean;
+    photoUrl?: string;
+    description?: string;
     customerName?: string;
     customerDoc?: string;
     customerPhone?: string;
@@ -37,14 +84,20 @@ export interface InventoryItem {
     notes?: string;
     date: string;
     updatedAt?: string;
-    status: 'pending' | 'approved' | 'rejected';
+    status: InventoryItemStatus;
 }
+
+export type NewInventoryItemInput = Omit<InventoryItem, 'id' | 'date' | 'updatedAt' | 'status'> & {
+    status?: InventoryItemStatus;
+};
 
 export interface InventoryContextType {
     inventory: InventoryItem[];
-    addToInventory: (item: Omit<InventoryItem, 'id' | 'date' | 'updatedAt' | 'status'>) => void;
+    addToInventory: (item: NewInventoryItemInput) => void;
+    replaceInventory: (items: InventoryItem[]) => void;
     removeFromInventory: (id: number) => void;
-    updateStatus: (id: number, newStatus: 'pending' | 'approved' | 'rejected') => void;
+    updateStatus: (id: number, newStatus: InventoryItemStatus) => void;
+    updatePaymentStatus: (id: number, paymentStatus: PaymentStatus) => void;
     updateInventoryItem: (id: number, updates: Partial<InventoryItem>) => void;
     clearInventory: () => void;
     clearTrash: () => void;

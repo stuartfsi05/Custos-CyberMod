@@ -2,7 +2,9 @@ export const TEXTS = {
     APP: {
         NAME: "Custos CyberMod",
         CALCULATOR: "Calculadora",
-        INVENTORY: "Inventário & Histórico",
+        INVENTORY: "Pedidos & Fila",
+        STOCK: "Estoque & Farm",
+        FINANCIAL: "Financeiro",
         SETTINGS: "Ajustes",
     },
     CALCULATOR: {
@@ -38,8 +40,11 @@ export const TEXTS = {
         FAIL_MARGIN_LABEL: "Margem de Falha (Multiplicador)",
     },
     STATUS: {
-        PENDING: "Em Análise",
-        APPROVED: "Aprovado",
-        REJECTED: "Reprovado",
+        PENDING: "Orçamento",
+        APPROVED: "Na Fila",
+        PRINTING: "Imprimindo",
+        COMPLETED: "Pronto",
+        DELIVERED: "Entregue",
+        REJECTED: "Lixeira",
     }
 };

@@ -1,7 +1,7 @@
 import React, { HTMLAttributes } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-interface CardProps extends HTMLAttributes<HTMLDivElement> { }
+type CardProps = HTMLAttributes<HTMLDivElement>;
 
 export const Card = ({ children, className, ...props }: CardProps) => {
     return (

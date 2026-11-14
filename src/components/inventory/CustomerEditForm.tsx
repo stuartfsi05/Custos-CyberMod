@@ -1,16 +1,49 @@
-import { UseFormRegister, FieldErrors, UseFormSetValue } from 'react-hook-form';
+import {
+    UseFormRegister,
+    FieldErrors,
+    UseFormSetValue,
+    FieldValues,
+    Path,
+    PathValue
+} from 'react-hook-form';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { User, FileText, Phone, Mail, MapPin, StickyNote } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface CustomerEditFormProps {
-    register: UseFormRegister<any>;
-    errors: FieldErrors<any>;
-    setValue: UseFormSetValue<any>;
+export interface CustomerFormFields extends FieldValues {
+    customerName?: string;
+    customerDoc?: string;
+    customerPhone?: string;
+    customerEmail?: string;
+    addressCep?: string;
+    addressStreet?: string;
+    addressNumber?: string;
+    addressComplement?: string;
+    addressNeighborhood?: string;
+    addressCity?: string;
+    addressState?: string;
+    notes?: string;
 }
 
-export const CustomerEditForm = ({ register, errors, setValue }: CustomerEditFormProps) => {
+interface CustomerEditFormProps<TFieldValues extends CustomerFormFields> {
+    register: UseFormRegister<TFieldValues>;
+    errors: FieldErrors<TFieldValues>;
+    setValue: UseFormSetValue<TFieldValues>;
+}
+
+/**
+ * Formulário reutilizável de edição de dados de cliente e endereço com autocompletar de CEP.
+ */
+export const CustomerEditForm = <TFieldValues extends CustomerFormFields>({
+    register,
+    errors,
+    setValue
+}: CustomerEditFormProps<TFieldValues>) => {
+    const fieldName = (name: keyof CustomerFormFields) => name as Path<TFieldValues>;
+    const setField = (name: keyof CustomerFormFields, value: string) => {
+        setValue(fieldName(name), value as PathValue<TFieldValues, Path<TFieldValues>>);
+    };
 
     const handleBlurCEP = async (e: React.FocusEvent<HTMLInputElement>) => {
         const cep = e.target.value.replace(/\D/g, '');
@@ -25,12 +58,12 @@ export const CustomerEditForm = ({ register, errors, setValue }: CustomerEditFor
                 return;
             }
 
-            setValue('addressStreet', data.logradouro);
-            setValue('addressNeighborhood', data.bairro);
-            setValue('addressCity', data.localidade);
-            setValue('addressState', data.uf);
+            setField('addressStreet', String(data.logradouro || ''));
+            setField('addressNeighborhood', String(data.bairro || ''));
+            setField('addressCity', String(data.localidade || ''));
+            setField('addressState', String(data.uf || ''));
             toast.success('Endereço encontrado!');
-        } catch (error) {
+        } catch {
             toast.error('Erro ao buscar CEP');
         }
     };
@@ -39,33 +72,35 @@ export const CustomerEditForm = ({ register, errors, setValue }: CustomerEditFor
         <div className="space-y-6 pt-4 border-t border-zinc-100 dark:border-zinc-800">
             <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-zinc-400" />
-                <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Dados do Cliente</h3>
+                <h3 className="text-xs font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-300">Dados do Cliente</h3>
             </div>
 
             <div className="space-y-3">
                 <Input
                     label="Nome"
                     icon={User}
-                    {...register('customerName')}
+                    {...register(fieldName('customerName'))}
                     error={errors.customerName?.message as string}
                 />
 
                 <div className="grid grid-cols-2 gap-3">
                     <Input
                         label="CPF/CNPJ"
+                        inputMode="numeric"
                         icon={FileText}
-                        {...register('customerDoc')}
+                        {...register(fieldName('customerDoc'))}
                     />
                     <Input
                         label="Telefone"
+                        inputMode="tel"
                         icon={Phone}
-                        {...register('customerPhone')}
+                        {...register(fieldName('customerPhone'))}
                     />
                 </div>
                 <Input
                     label="Email"
                     icon={Mail}
-                    {...register('customerEmail')}
+                    {...register(fieldName('customerEmail'))}
                     error={errors.customerEmail?.message as string}
                 />
 
@@ -73,19 +108,20 @@ export const CustomerEditForm = ({ register, errors, setValue }: CustomerEditFor
                 <div className="space-y-3 pt-2">
                     <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-zinc-400" />
-                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Endereço</span>
+                        <span className="text-xs font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-300">Endereço</span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <Input
                             label="CEP"
+                            inputMode="numeric"
                             maxLength={9}
                             placeholder="00000-000"
-                            {...register('addressCep')}
+                            {...register(fieldName('addressCep'))}
                             onBlur={handleBlurCEP}
                         />
                         <div className="flex items-end pb-3">
-                            <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" rel="noopener noreferrer" className="text-[10px] text-emerald-500 font-bold underline">
+                            <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-500 hover:text-emerald-600 font-bold underline">
                                 Buscar CEP
                             </a>
                         </div>
@@ -94,34 +130,34 @@ export const CustomerEditForm = ({ register, errors, setValue }: CustomerEditFor
                     <div className="grid grid-cols-[1fr_70px] gap-3">
                         <Input
                             label="Rua"
-                            {...register('addressStreet')}
+                            {...register(fieldName('addressStreet'))}
                         />
                         <Input
                             label="Nº"
-                            {...register('addressNumber')}
+                            {...register(fieldName('addressNumber'))}
                         />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <Input
                             label="Bairro"
-                            {...register('addressNeighborhood')}
+                            {...register(fieldName('addressNeighborhood'))}
                         />
                         <Input
                             label="Compl."
-                            {...register('addressComplement')}
+                            {...register(fieldName('addressComplement'))}
                         />
                     </div>
 
                     <div className="grid grid-cols-[1fr_60px] gap-3">
                         <Input
                             label="Cidade"
-                            {...register('addressCity')}
+                            {...register(fieldName('addressCity'))}
                         />
                         <Input
                             label="UF"
                             maxLength={2}
-                            {...register('addressState')}
+                            {...register(fieldName('addressState'))}
                         />
                     </div>
                 </div>
@@ -130,11 +166,11 @@ export const CustomerEditForm = ({ register, errors, setValue }: CustomerEditFor
             <div className="space-y-3 pt-2">
                 <div className="flex items-center gap-2">
                     <StickyNote className="w-4 h-4 text-zinc-400" />
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Notas</h3>
+                    <h3 className="text-xs font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-300">Notas</h3>
                 </div>
                 <Textarea
                     placeholder="Observações..."
-                    {...register('notes')}
+                    {...register(fieldName('notes'))}
                 />
             </div>
         </div>

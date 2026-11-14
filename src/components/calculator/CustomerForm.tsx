@@ -1,7 +1,7 @@
 import { UseFormRegister, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
-import { User, FileText, Phone, Mail, MapPin, StickyNote, Search } from 'lucide-react';
+import { User, FileText, Phone, Mail, MapPin, StickyNote } from 'lucide-react';
 import { CalculatorFormValues } from '../../schemas/calculatorSchema';
 import { toast } from 'sonner';
 
@@ -31,7 +31,7 @@ export const CustomerForm = ({ register, errors, setValue }: CustomerFormProps) 
             setValue('addressCity', data.localidade);
             setValue('addressState', data.uf);
             toast.success('Endereço encontrado!');
-        } catch (error) {
+        } catch {
             toast.error('Erro ao buscar CEP');
         }
     };
@@ -41,29 +41,23 @@ export const CustomerForm = ({ register, errors, setValue }: CustomerFormProps) 
             <section className="space-y-3">
                 <div className="flex items-center gap-2 px-1">
                     <User className="w-4 h-4 text-zinc-400" />
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Dados do Cliente</h2>
+                    <h2 className="text-xs font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-300">Contato & Documento (Opcional)</h2>
                 </div>
 
                 <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-4 md:p-6 border border-zinc-100 dark:border-zinc-800 shadow-sm space-y-4">
-                    <Input
-                        label="Nome do Cliente"
-                        placeholder="Ex: João Silva"
-                        icon={User}
-                        {...register('customerName')}
-                        error={errors.customerName?.message as string}
-                    />
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Input
                             label="CPF / CNPJ"
                             placeholder="000.000.000-00"
+                            inputMode="numeric"
                             icon={FileText}
                             {...register('customerDoc')}
                             error={errors.customerDoc?.message as string}
                         />
                         <Input
-                            label="Telefone"
+                            label="Telefone / WhatsApp"
                             placeholder="(00) 00000-0000"
+                            inputMode="tel"
                             icon={Phone}
                             {...register('customerPhone')}
                             error={errors.customerPhone?.message as string}
@@ -82,7 +76,7 @@ export const CustomerForm = ({ register, errors, setValue }: CustomerFormProps) 
                     <div className="pt-2 space-y-4">
                         <div className="flex items-center gap-2 px-1">
                             <MapPin className="w-4 h-4 text-zinc-400" />
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Endereço de Entrega</h3>
+                            <h3 className="text-xs font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-300">Endereço de Entrega</h3>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -158,7 +152,7 @@ export const CustomerForm = ({ register, errors, setValue }: CustomerFormProps) 
             <section className="space-y-3">
                 <div className="flex items-center gap-2 px-1">
                     <StickyNote className="w-4 h-4 text-zinc-400" />
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Notas do Pedido</h2>
+                    <h2 className="text-xs font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-300">Notas do Pedido</h2>
                 </div>
 
                 <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-4 md:p-6 border border-zinc-100 dark:border-zinc-800 shadow-sm">

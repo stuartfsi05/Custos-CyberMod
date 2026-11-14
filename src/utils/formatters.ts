@@ -28,11 +28,19 @@ export const timeToDecimal = (timeStr: string | number): number => {
 };
 
 export const decimalToTime = (decimal: number): string => {
-    if (isNaN(decimal) || decimal === 0) return "0:00";
+    if (isNaN(decimal) || decimal <= 0) return "0:00";
 
-    const hours = Math.floor(decimal);
-    const minutes = Math.round((decimal - hours) * 60);
+    const totalMinutes = Math.round(decimal * 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
 
+    return `${hours}:${minutes.toString().padStart(2, '0')}`;
+};
+
+export const minutesToHHMM = (totalMins: number): string => {
+    const safeMins = Math.max(0, Math.round(totalMins || 0));
+    const hours = Math.floor(safeMins / 60);
+    const minutes = safeMins % 60;
     return `${hours}:${minutes.toString().padStart(2, '0')}`;
 };
 
