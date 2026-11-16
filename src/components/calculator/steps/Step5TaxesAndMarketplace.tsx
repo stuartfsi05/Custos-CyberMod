@@ -3,7 +3,8 @@ import { ChevronDown, Plus, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
 import { TaxIncidenceMode, TaxPassThroughMode } from '../../../hooks/usePricingEngine';
 import { MarketplaceChannel } from '../../../types/settings';
-import { parseNumber } from '../../../utils/formatters';
+import { parseNumber, sanitizeNumericInputString } from '../../../utils/formatters';
+import { NumericInput } from '../../ui/NumericInput';
 import { TooltipHelp } from '../../ui/TooltipHelp';
 
 interface Step5TaxesAndMarketplaceProps {
@@ -127,7 +128,11 @@ export const Step5TaxesAndMarketplace = ({
                                         inputMode="decimal"
                                         step="0.1"
                                         value={newChannelComm}
-                                        onChange={(e) => setNewChannelComm(e.target.value)}
+                                        onChange={(e) => {
+                                            const cleaned = sanitizeNumericInputString(e.target.value);
+                                            if (cleaned !== e.target.value) e.currentTarget.value = cleaned;
+                                            setNewChannelComm(cleaned);
+                                        }}
                                         placeholder="14"
                                         aria-label="Comissão do novo canal"
                                         className="w-full h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-2.5 pr-7 text-xs font-bold tabular-nums"
@@ -143,7 +148,11 @@ export const Step5TaxesAndMarketplace = ({
                                             inputMode="decimal"
                                             step="0.01"
                                             value={newChannelFixed}
-                                            onChange={(e) => setNewChannelFixed(e.target.value)}
+                                            onChange={(e) => {
+                                                const cleaned = sanitizeNumericInputString(e.target.value);
+                                                if (cleaned !== e.target.value) e.currentTarget.value = cleaned;
+                                                setNewChannelFixed(cleaned);
+                                            }}
                                             placeholder="6"
                                             aria-label="Taxa fixa do novo canal"
                                             className="w-full h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-2.5 pr-8 text-xs font-bold tabular-nums"
@@ -259,13 +268,11 @@ export const Step5TaxesAndMarketplace = ({
                                 <TooltipHelp text="Comissão % do marketplace (ML, Shopee...). Por peça ou no total, conforme o modo." label="Comissão Market" />
                             </label>
                             <div className="relative">
-                                <input
-                                    type="number"
-                                    inputMode="decimal"
+                                <NumericInput
                                     step="0.1"
-                                    min="0"
+                                    min={0}
                                     value={commissionPercent}
-                                    onChange={(e) => onCommissionPercentChange(parseNumber(e.target.value))}
+                                    onValueChange={onCommissionPercentChange}
                                     className="w-full h-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950 pl-3 pr-8 text-sm font-bold tabular-nums"
                                 />
                                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-zinc-400 select-none">
@@ -279,13 +286,11 @@ export const Step5TaxesAndMarketplace = ({
                                 <TooltipHelp text="Taxa fixa do anúncio/venda (R$), se o canal cobrar além da %." label="Taxa Fixa" />
                             </label>
                             <div className="relative">
-                                <input
-                                    type="number"
-                                    inputMode="decimal"
+                                <NumericInput
                                     step="0.01"
-                                    min="0"
+                                    min={0}
                                     value={fixedFee}
-                                    onChange={(e) => onFixedFeeChange(parseNumber(e.target.value))}
+                                    onValueChange={onFixedFeeChange}
                                     className="w-full h-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950 pl-3 pr-9 text-sm font-bold tabular-nums"
                                 />
                                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-zinc-400 select-none">
@@ -293,19 +298,17 @@ export const Step5TaxesAndMarketplace = ({
                                 </span>
                             </div>
                         </div>
-                        <div>
-                            <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1 whitespace-nowrap">
+                        <div className="min-w-0">
+                            <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
                                 Imposto Venda / DAS
                                 <TooltipHelp text="Imposto ou DAS estimado sobre a venda. Ajuste à sua realidade fiscal." label="Imposto Venda" />
                             </label>
                             <div className="relative">
-                                <input
-                                    type="number"
-                                    inputMode="decimal"
+                                <NumericInput
                                     step="0.1"
-                                    min="0"
+                                    min={0}
                                     value={taxPercent}
-                                    onChange={(e) => onTaxPercentChange(parseNumber(e.target.value))}
+                                    onValueChange={onTaxPercentChange}
                                     className="w-full h-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950 pl-3 pr-8 text-sm font-bold tabular-nums"
                                 />
                                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-zinc-400 select-none">

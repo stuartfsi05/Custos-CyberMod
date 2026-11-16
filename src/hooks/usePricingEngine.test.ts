@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { calculate3DPricing } from './usePricingEngine';
-import { decimalToTime, minutesToHHMM } from '../utils/formatters';
+import { calculate3DPricing, getMarginHealthStatus } from './usePricingEngine';
+import { decimalToTime, minutesToHHMM, sanitizeNumericInputString } from '../utils/formatters';
 
 describe('calculate3DPricing', () => {
     it('reproduz exatamente a matemática do vídeo (Snapmaker U1) nos modos Por Peça e Por Lote', () => {
@@ -276,5 +276,30 @@ describe('calculate3DPricing', () => {
         expect(minutesToHHMM(75)).toBe('1:15');
         expect(minutesToHHMM(40)).toBe('0:40');
         expect(minutesToHHMM(120)).toBe('2:00');
+    });
+
+    it('remove zeros à esquerda em inputs numéricos mantendo decimais e string vazia', () => {
+        expect(sanitizeNumericInputString('030')).toBe('30');
+        expect(sanitizeNumericInputString('03')).toBe('3');
+        expect(sanitizeNumericInputString('000')).toBe('0');
+        expect(sanitizeNumericInputString('0')).toBe('0');
+        expect(sanitizeNumericInputString('0.5')).toBe('0.5');
+        expect(sanitizeNumericInputString('0,25')).toBe('0,25');
+        expect(sanitizeNumericInputString('-030')).toBe('-30');
+        expect(sanitizeNumericInputString('')).toBe('');
+    });
+
+    it('classifica adequadamente a saúde da margem nos presets Competitivo, Padrão, Premium e Luxo', () => {
+        expect(getMarginHealthStatus(0, 0).level).toBe('loss');
+        expect(getMarginHealthStatus(-2, -10).level).toBe('loss');
+        expect(getMarginHealthStatus(2, 15).level).toBe('tight');
+        expect(getMarginHealthStatus(0.01, 24.98).level).toBe('tight');
+        expect(getMarginHealthStatus(0.01, 25).level).toBe('competitive');
+        expect(getMarginHealthStatus(5, 25).level).toBe('competitive');
+        expect(getMarginHealthStatus(0.01, 39.98).level).toBe('competitive');
+        expect(getMarginHealthStatus(0.01, 40).level).toBe('healthy');
+        expect(getMarginHealthStatus(8, 40).level).toBe('healthy');
+        expect(getMarginHealthStatus(12, 60).level).toBe('healthy');
+        expect(getMarginHealthStatus(16, 80).level).toBe('healthy');
     });
 });

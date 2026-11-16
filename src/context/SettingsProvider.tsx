@@ -1,10 +1,12 @@
 import { useEffect, ReactNode } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { parseNumber } from '../utils/formatters';
-import { SettingsContext } from './SettingsContext';
+import { SettingsContext, UpsertFilamentPresetInput, UpsertPrinterPresetInput } from './SettingsContext';
 import {
     Settings,
     AuxiliaryCatalogItem,
+    FilamentSpool,
+    PrinterProfile,
     defaultSettings,
     defaultTiers,
     defaultExtras,
@@ -25,13 +27,15 @@ const NUMERIC_SETTING_KEYS: ReadonlyArray<keyof Settings> = [
 ];
 
 const V5_MIGRATION_KEY = 'custos_pro_v5_light_default';
+const V6_MIGRATION_KEY = 'custos_v6_extended_presets';
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     const [settings, setSettings] = useLocalStorage<Settings>('custos_settings', defaultSettings);
 
-    // One-time migration for Light Mode default, Snapmaker U1 preset and Auxiliary Catalog
+    // One-time migration for Light Mode default, extended presets and Auxiliary Catalog
     useEffect(() => {
         const alreadyMigratedV5 = typeof window !== 'undefined' && window.localStorage.getItem(V5_MIGRATION_KEY) === '1';
+        const alreadyMigratedV6 = typeof window !== 'undefined' && window.localStorage.getItem(V6_MIGRATION_KEY) === '1';
         const missingFields =
             !settings ||
             !Array.isArray(settings.tiers) ||
@@ -48,19 +52,25 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
             settings.taxPercent === undefined ||
             settings.defaultPrinterId === undefined;
 
-        if (!alreadyMigratedV5 || missingFields) {
+        if (!alreadyMigratedV5 || !alreadyMigratedV6 || missingFields) {
             setSettings((prev: Settings) => {
                 const existingPrinters = Array.isArray(prev?.printers) && prev.printers.length > 0 ? prev.printers : defaultPrinters;
-                const hasSnapmaker = existingPrinters.some(p => p.id === 'printer_snapmaker_u1');
-                const mergedPrinters = hasSnapmaker
-                    ? existingPrinters
-                    : [defaultPrinters[0], ...existingPrinters];
+                const existingPrinterIds = new Set(existingPrinters.map(p => p.id));
+                const missingPrinters = !alreadyMigratedV6
+                    ? defaultPrinters.filter(dp => !existingPrinterIds.has(dp.id))
+                    : [];
+                const mergedPrinters = missingPrinters.length > 0
+                    ? [...existingPrinters, ...missingPrinters]
+                    : existingPrinters;
 
                 const existingFilaments = Array.isArray(prev?.filaments) && prev.filaments.length > 0 ? prev.filaments : defaultFilaments;
-                const hasGenericPla = existingFilaments.some(f => f.id === 'fil_pla_generic');
-                const mergedFilaments = hasGenericPla
-                    ? existingFilaments
-                    : [defaultFilaments[0], ...existingFilaments];
+                const existingFilamentIds = new Set(existingFilaments.map(f => f.id));
+                const missingFilaments = !alreadyMigratedV6
+                    ? defaultFilaments.filter(df => !existingFilamentIds.has(df.id))
+                    : [];
+                const mergedFilaments = missingFilaments.length > 0
+                    ? [...existingFilaments, ...missingFilaments]
+                    : existingFilaments;
 
                 return {
                     ...defaultSettings,
@@ -88,6 +98,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
 
             if (typeof window !== 'undefined') {
                 window.localStorage.setItem(V5_MIGRATION_KEY, '1');
+                window.localStorage.setItem(V6_MIGRATION_KEY, '1');
             }
         }
     }, [settings, setSettings]);
@@ -172,6 +183,75 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         return created;
     };
 
+    const upsertFilamentPreset = (input: UpsertFilamentPresetInput): FilamentSpool => {
+        const trimmedName = input.name.trim();
+        const totalG = Math.max(1, input.totalWeightG ?? 1000);
+        const pricePerKg = input.isConsigned ? 0 : Math.max(0, input.pricePerKg);
+        const existing = safeSettings.filaments.find(
+            spool => spool.name.toLowerCase() === trimmedName.toLowerCase()
+        );
+        if (existing) {
+            const updatedSpool: FilamentSpool = {
+                ...existing,
+                material: input.material ?? existing.material,
+                pricePerKg,
+                isConsigned: input.isConsigned ?? existing.isConsigned
+            };
+            updateSetting(
+                'filaments',
+                safeSettings.filaments.map(s => (s.id === existing.id ? updatedSpool : s))
+            );
+            return updatedSpool;
+        }
+        const created: FilamentSpool = {
+            id: `fil_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
+            name: trimmedName,
+            material: input.material ?? 'PLA',
+            brand: 'Personalizado',
+            colorHex: '#10b981',
+            pricePerKg,
+            totalWeightG: totalG,
+            remainingWeightG: totalG,
+            isConsigned: input.isConsigned ?? false
+        };
+        updateSetting('filaments', [created, ...safeSettings.filaments]);
+        return created;
+    };
+
+    const upsertPrinterPreset = (input: UpsertPrinterPresetInput): PrinterProfile => {
+        const trimmedName = input.name.trim();
+        const existing = safeSettings.printers.find(
+            printer => printer.name.toLowerCase() === trimmedName.toLowerCase()
+        );
+        if (existing) {
+            const updatedPrinter: PrinterProfile = {
+                ...existing,
+                technology: input.technology ?? existing.technology,
+                powerWatts: Math.max(1, input.powerWatts),
+                purchasePrice: Math.max(0, input.purchasePrice),
+                lifespanHours: Math.max(1, input.lifespanHours),
+                maintenancePercent: Math.max(0, input.maintenancePercent ?? existing.maintenancePercent)
+            };
+            updateSetting(
+                'printers',
+                safeSettings.printers.map(p => (p.id === existing.id ? updatedPrinter : p))
+            );
+            return updatedPrinter;
+        }
+        const created: PrinterProfile = {
+            id: `printer_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
+            name: trimmedName,
+            technology: input.technology ?? 'FDM',
+            powerWatts: Math.max(1, input.powerWatts),
+            purchasePrice: Math.max(0, input.purchasePrice),
+            lifespanHours: Math.max(1, input.lifespanHours),
+            maintenancePercent: Math.max(0, input.maintenancePercent ?? 10),
+            status: 'idle'
+        };
+        updateSetting('printers', [created, ...safeSettings.printers]);
+        return created;
+    };
+
     useEffect(() => {
         const root = window.document.documentElement;
         const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -191,7 +271,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
                 updateSetting,
                 replaceSettings,
                 deductFilamentWeight,
-                upsertAuxiliaryItem
+                upsertAuxiliaryItem,
+                upsertFilamentPreset,
+                upsertPrinterPreset
             }}
         >
             {children}

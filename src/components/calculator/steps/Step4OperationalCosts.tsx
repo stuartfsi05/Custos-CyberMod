@@ -3,7 +3,8 @@ import { ChevronDown, Plus, Search, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { CostAllocationMode, SelectedAuxiliaryItem } from '../../../hooks/usePricingEngine';
 import { AuxiliaryCatalogItem } from '../../../types/settings';
-import { formatCurrency, parseNumber } from '../../../utils/formatters';
+import { formatCurrency, parseNumber, sanitizeNumericInputString } from '../../../utils/formatters';
+import { NumericInput } from '../../ui/NumericInput';
 import { TooltipHelp } from '../../ui/TooltipHelp';
 
 interface Step4OperationalCostsProps {
@@ -161,9 +162,9 @@ export const Step4OperationalCosts = ({
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch min-w-0">
                         {/* Labor */}
-                        <div className="bg-zinc-50/70 dark:bg-zinc-950/60 p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 flex flex-col justify-between gap-3 h-full">
+                        <div className="min-w-0 bg-zinc-50/70 dark:bg-zinc-950/60 p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 flex flex-col justify-between gap-3 h-full">
                             <div className="flex items-center justify-between gap-2">
                                 <p className="text-xs font-extrabold uppercase tracking-wider text-zinc-700 dark:text-zinc-200">Valor da mão de obra</p>
                                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
@@ -171,18 +172,16 @@ export const Step4OperationalCosts = ({
                                 </span>
                             </div>
                             <div>
-                                <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1 whitespace-nowrap">
+                                <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
                                     Sua Hora de Trabalho
                                     <TooltipHelp text="Quanto vale 1 hora do seu tempo (setup, acabamento, atendimento). Não deixe zero." label="Hora de trabalho" />
                                 </label>
                                 <div className="relative">
-                                    <input
-                                        type="number"
-                                        inputMode="decimal"
+                                    <NumericInput
                                         step="0.01"
-                                        min="0"
+                                        min={0}
                                         value={laborRatePerHour}
-                                        onChange={(e) => onLaborRateChange(parseNumber(e.target.value))}
+                                        onValueChange={onLaborRateChange}
                                         className="w-full h-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-3 pr-12 text-sm font-bold tabular-nums"
                                     />
                                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-zinc-400 select-none">
@@ -191,18 +190,17 @@ export const Step4OperationalCosts = ({
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1 whitespace-nowrap">
+                                <div className="min-w-0">
+                                    <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
                                         Setup
                                         <TooltipHelp text="Tempo de preparação do arquivo, fatiamento, troca de rolo e início." label="Setup" />
                                     </label>
                                     <div className="relative">
-                                        <input
-                                            type="number"
-                                            inputMode="numeric"
-                                            min="0"
+                                        <NumericInput
+                                            integer
+                                            min={0}
                                             value={setupMinutes}
-                                            onChange={(e) => onSetupMinutesChange(parseNumber(e.target.value))}
+                                            onValueChange={onSetupMinutesChange}
                                             className="w-full h-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-3 pr-10 text-sm font-bold tabular-nums"
                                         />
                                         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-zinc-400 select-none">
@@ -210,18 +208,17 @@ export const Step4OperationalCosts = ({
                                         </span>
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1 whitespace-nowrap">
+                                <div className="min-w-0">
+                                    <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
                                         Pós-proc.
                                         <TooltipHelp text="Tempo manual removendo suportes, lixando, colando e embalando." label="Pós-processamento" />
                                     </label>
                                     <div className="relative">
-                                        <input
-                                            type="number"
-                                            inputMode="numeric"
-                                            min="0"
+                                        <NumericInput
+                                            integer
+                                            min={0}
                                             value={postMinutes}
-                                            onChange={(e) => onPostMinutesChange(parseNumber(e.target.value))}
+                                            onValueChange={onPostMinutesChange}
                                             className="w-full h-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-3 pr-10 text-sm font-bold tabular-nums"
                                         />
                                         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-zinc-400 select-none">
@@ -233,7 +230,7 @@ export const Step4OperationalCosts = ({
                         </div>
 
                         {/* Extra Costs */}
-                        <div className="bg-zinc-50/70 dark:bg-zinc-950/60 p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 flex flex-col justify-between gap-3 h-full">
+                        <div className="min-w-0 bg-zinc-50/70 dark:bg-zinc-950/60 p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 flex flex-col justify-between gap-3 h-full">
                             <div className="flex items-center justify-between gap-2">
                                 <p className="text-xs font-extrabold uppercase tracking-wider text-zinc-700 dark:text-zinc-200">Custos extras</p>
                                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
@@ -241,19 +238,17 @@ export const Step4OperationalCosts = ({
                                 </span>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1 whitespace-nowrap">
+                                <div className="min-w-0">
+                                    <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
                                         Embalagem
                                         <TooltipHelp text="Caixa, plástico, etiqueta etc. por peça ou por lote (conforme o modo escolhido)." label="Embalagem" />
                                     </label>
                                     <div className="relative">
-                                        <input
-                                            type="number"
-                                            inputMode="decimal"
+                                        <NumericInput
                                             step="0.01"
-                                            min="0"
+                                            min={0}
                                             value={packagingCost}
-                                            onChange={(e) => onPackagingCostChange(parseNumber(e.target.value))}
+                                            onValueChange={onPackagingCostChange}
                                             className="w-full h-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-3 pr-9 text-sm font-bold tabular-nums"
                                         />
                                         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-zinc-400 select-none">
@@ -261,19 +256,17 @@ export const Step4OperationalCosts = ({
                                         </span>
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1 whitespace-nowrap">
+                                <div className="min-w-0">
+                                    <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
                                         Hardware
                                         <TooltipHelp text="Parafusos, ímãs, inserts e outros itens que não são filamento." label="Hardware" />
                                     </label>
                                     <div className="relative">
-                                        <input
-                                            type="number"
-                                            inputMode="decimal"
+                                        <NumericInput
                                             step="0.01"
-                                            min="0"
+                                            min={0}
                                             value={hardwareCost}
-                                            onChange={(e) => onHardwareCostChange(parseNumber(e.target.value))}
+                                            onValueChange={onHardwareCostChange}
                                             className="w-full h-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-3 pr-9 text-sm font-bold tabular-nums"
                                         />
                                         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-zinc-400 select-none">
@@ -283,18 +276,16 @@ export const Step4OperationalCosts = ({
                                 </div>
                             </div>
                             <div>
-                                <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1 whitespace-nowrap">
+                                <label className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
                                     Margem de Falha / Risco (por peça)
                                     <TooltipHelp text="Percentual adicionado sobre o custo de produção para cobrir eventuais falhas de impressão." label="Falha" />
                                 </label>
                                 <div className="relative">
-                                    <input
-                                        type="number"
-                                        inputMode="decimal"
+                                    <NumericInput
                                         step="0.5"
-                                        min="0"
+                                        min={0}
                                         value={failPercent}
-                                        onChange={(e) => onFailPercentChange(parseNumber(e.target.value))}
+                                        onValueChange={onFailPercentChange}
                                         className="w-full h-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-3 pr-8 text-sm font-bold tabular-nums"
                                     />
                                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-zinc-400 select-none">
@@ -364,8 +355,12 @@ export const Step4OperationalCosts = ({
                                         step="0.01"
                                         min="0"
                                         value={inlineAuxPrice}
-                                        onChange={(e) => setInlineAuxPrice(e.target.value)}
-                                        placeholder="1,00"
+                                        onChange={(e) => {
+                                            const cleaned = sanitizeNumericInputString(e.target.value);
+                                            if (cleaned !== e.target.value) e.currentTarget.value = cleaned;
+                                            setInlineAuxPrice(cleaned);
+                                        }}
+                                        placeholder="0"
                                         className="w-full h-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-3 pr-9 text-xs font-bold tabular-nums"
                                     />
                                     <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-zinc-400 select-none">
@@ -390,12 +385,12 @@ export const Step4OperationalCosts = ({
                                     <div key={item.id} className="flex items-center justify-between gap-2 bg-white dark:bg-zinc-900 px-3 py-1.5 rounded-xl border border-zinc-200/70 dark:border-zinc-800 text-xs">
                                         <span className="font-bold text-zinc-800 dark:text-zinc-200 truncate">{item.name}</span>
                                         <div className="flex items-center gap-2 shrink-0">
-                                            <input
-                                                type="number"
-                                                inputMode="numeric"
-                                                min="1"
+                                            <NumericInput
+                                                integer
+                                                min={1}
+                                                emptyFallback={1}
                                                 value={item.qty}
-                                                onChange={(e) => onUpdateAuxItemQty(item.id, Math.max(1, parseInt(e.target.value, 10) || 1))}
+                                                onValueChange={(val) => onUpdateAuxItemQty(item.id, val)}
                                                 className="w-12 h-8 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 text-center font-bold tabular-nums"
                                             />
                                             <span className="font-bold text-emerald-600 dark:text-emerald-400 tabular-nums w-16 text-right">

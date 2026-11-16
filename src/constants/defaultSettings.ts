@@ -121,6 +121,61 @@ export const defaultFilaments: FilamentSpool[] = [
         isConsigned: false
     },
     {
+        id: 'fil_pla_silk',
+        name: 'PLA Silk / Dual Color',
+        material: 'PLA',
+        brand: 'Padrão',
+        colorHex: '#eab308',
+        pricePerKg: 145,
+        totalWeightG: 1000,
+        remainingWeightG: 1000,
+        isConsigned: false
+    },
+    {
+        id: 'fil_abs_premium',
+        name: 'ABS Premium',
+        material: 'ABS',
+        brand: 'Padrão',
+        colorHex: '#f97316',
+        pricePerKg: 130,
+        totalWeightG: 1000,
+        remainingWeightG: 1000,
+        isConsigned: false
+    },
+    {
+        id: 'fil_asa_uv',
+        name: 'ASA Resistente UV',
+        material: 'ASA',
+        brand: 'Padrão',
+        colorHex: '#3b82f6',
+        pricePerKg: 165,
+        totalWeightG: 1000,
+        remainingWeightG: 1000,
+        isConsigned: false
+    },
+    {
+        id: 'fil_tpu_95a',
+        name: 'TPU 95A Flexível',
+        material: 'TPU',
+        brand: 'Padrão',
+        colorHex: '#ec4899',
+        pricePerKg: 160,
+        totalWeightG: 1000,
+        remainingWeightG: 1000,
+        isConsigned: false
+    },
+    {
+        id: 'fil_resina_std',
+        name: 'Resina Standard 405nm',
+        material: 'Resina',
+        brand: 'Padrão',
+        colorHex: '#06b6d4',
+        pricePerKg: 150,
+        totalWeightG: 1000,
+        remainingWeightG: 1000,
+        isConsigned: false
+    },
+    {
         id: 'fil_consigned',
         name: 'Material do Cliente (Consignado)',
         material: 'Outro',

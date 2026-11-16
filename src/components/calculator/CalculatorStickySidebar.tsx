@@ -4,11 +4,13 @@ import {
 } from '../../types/settings';
 import {
     AdvancedPricingBreakdown,
-    DiscountType
+    DiscountType,
+    getMarginHealthStatus
 } from '../../hooks/usePricingEngine';
 import { CostDonutChart, CostCategorySlice } from './CostDonutChart';
 import { QuoteLineItem } from './QuoteDocumentModal';
 import { Button } from '../ui/Button';
+import { NumericInput } from '../ui/NumericInput';
 import { TooltipHelp } from '../ui/TooltipHelp';
 import { formatCurrency, parseNumber } from '../../utils/formatters';
 import {
@@ -89,12 +91,18 @@ export const CalculatorStickySidebar = ({
         pricing.unitProductionCost > 0
             ? (pricing.unitProfit / pricing.unitProductionCost) * 100
             : markupPercent;
-    const isHealthyMargin = pricing.unitProfit > 0 && netReturnOnCostPct >= 79.99;
+    const marginHealth = getMarginHealthStatus(pricing.unitProfit, netReturnOnCostPct);
+    const badgeColorMap = {
+        loss: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+        tight: 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300',
+        competitive: 'bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300',
+        healthy: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
+    } as const;
 
     return (
         <aside
             id="calculator-summary-panel"
-            className="lg:col-span-5 lg:sticky lg:top-[76px] lg:max-h-[calc(100vh-92px)] lg:overflow-y-auto space-y-3 pr-0.5 scroll-mt-24"
+            className="lg:col-span-5 min-w-0 w-full max-w-full overflow-x-clip lg:sticky lg:top-[76px] lg:max-h-[calc(100vh-92px)] lg:overflow-y-auto space-y-3 pr-0.5 scroll-mt-24"
         >
             {/* Sticky Top Summary: Sempre visível no topo da coluna direita */}
             <div className="lg:sticky lg:top-0 z-20 bg-white dark:bg-zinc-900 rounded-3xl p-4 border border-zinc-200/80 dark:border-zinc-800 shadow-lg space-y-2.5">
@@ -105,12 +113,10 @@ export const CalculatorStickySidebar = ({
                     <span
                         className={clsx(
                             'px-2.5 py-0.5 rounded-full text-[11px] font-black',
-                            isHealthyMargin
-                                ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
-                                : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
+                            badgeColorMap[marginHealth.level]
                         )}
                     >
-                        {isHealthyMargin ? 'Margem saudável' : 'Margem apertada'}
+                        {marginHealth.label}
                     </span>
                 </div>
 
@@ -138,13 +144,11 @@ export const CalculatorStickySidebar = ({
                             />
                         </span>
                         <div className="flex items-center gap-1">
-                            <input
-                                type="number"
-                                inputMode="decimal"
-                                min="0"
+                            <NumericInput
+                                min={0}
                                 step="0.5"
-                                value={discountValue || ''}
-                                onChange={(e) => onDiscountValueChange(parseNumber(e.target.value))}
+                                value={discountValue}
+                                onValueChange={onDiscountValueChange}
                                 placeholder="0"
                                 aria-label="Valor do desconto"
                                 className="min-w-[72px] w-[72px] h-8 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 text-xs font-bold text-center tabular-nums"
@@ -227,13 +231,11 @@ export const CalculatorStickySidebar = ({
                     <div className="flex items-center justify-between gap-3">
                         <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300">Markup sobre custo</span>
                         <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-xl border border-zinc-200/70 dark:border-zinc-700">
-                            <input
-                                type="number"
-                                inputMode="decimal"
-                                min="0"
+                            <NumericInput
+                                min={0}
                                 step="5"
                                 value={markupPercent}
-                                onChange={(e) => onMarkupChange(Math.max(0, parseNumber(e.target.value)))}
+                                onValueChange={(val) => onMarkupChange(Math.max(0, val))}
                                 aria-label="Markup sobre custo em porcentagem"
                                 className="min-w-[72px] w-[72px] bg-transparent text-center text-xs font-black text-emerald-600 dark:text-emerald-400 outline-none tabular-nums"
                             />

@@ -5,6 +5,7 @@ import { clsx } from 'clsx';
 import { CalculatorFormValues } from '../../../schemas/calculatorSchema';
 import { CustomerForm } from '../CustomerForm';
 import { TooltipHelp } from '../../ui/TooltipHelp';
+import { sanitizeNumericInputString } from '../../../utils/formatters';
 
 interface Step1ProjectInfoProps {
     onFocusStep: () => void;
@@ -189,7 +190,17 @@ export const Step1ProjectInfo = ({
                                             type="number"
                                             inputMode="decimal"
                                             step="0.01"
+                                            placeholder="0"
                                             {...register('shippingCost')}
+                                            onFocus={(e) => {
+                                                if (e.currentTarget.value === '0') e.currentTarget.value = '';
+                                            }}
+                                            onInput={(e) => {
+                                                const cleaned = sanitizeNumericInputString(e.currentTarget.value);
+                                                if (cleaned !== e.currentTarget.value) {
+                                                    e.currentTarget.value = cleaned;
+                                                }
+                                            }}
                                             className="w-full h-11 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 pl-3 pr-10 text-sm font-bold tabular-nums"
                                         />
                                         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-zinc-400 select-none">

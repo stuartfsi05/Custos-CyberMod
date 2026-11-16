@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import { ChevronDown, Plus, Trash2 } from 'lucide-react';
+import { BookmarkPlus, ChevronDown, Plus, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { AdditionalMaterialInput } from '../../../hooks/usePricingEngine';
 import { FilamentSpool } from '../../../types/settings';
-import { formatCurrency, parseNumber } from '../../../utils/formatters';
+import { formatCurrency } from '../../../utils/formatters';
+import { NumericInput } from '../../ui/NumericInput';
 import { TooltipHelp } from '../../ui/TooltipHelp';
+
+const MATERIAL_TYPES: FilamentSpool['material'][] = ['PLA', 'PETG', 'ABS', 'ASA', 'TPU', 'Resina', 'Outro'];
 
 interface Step2MaterialsProps {
     onFocusStep: () => void;
@@ -25,6 +28,12 @@ interface Step2MaterialsProps {
     onRemoveAdditionalMaterial: (id: string) => void;
     deductStockOnSave: boolean;
     onDeductStockOnSaveChange: (checked: boolean) => void;
+    onSaveMaterialPreset: (input: {
+        name: string;
+        material: FilamentSpool['material'];
+        pricePerKg: number;
+        totalWeightG?: number;
+    }) => boolean;
 }
 
 export const Step2Materials = ({
@@ -45,10 +54,31 @@ export const Step2Materials = ({
     onUpdateAdditionalMaterial,
     onRemoveAdditionalMaterial,
     deductStockOnSave,
-    onDeductStockOnSaveChange
+    onDeductStockOnSaveChange,
+    onSaveMaterialPreset
 }: Step2MaterialsProps) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [showNewMaterial, setShowNewMaterial] = useState(false);
+    const [newMatName, setNewMatName] = useState('');
+    const [newMatType, setNewMatType] = useState<FilamentSpool['material']>('PLA');
+    const [newMatPrice, setNewMatPrice] = useState<number>(120);
+    const [newMatWeight, setNewMatWeight] = useState<number>(1000);
 
+    const handleQuickMaterialSubmit = () => {
+        if (
+            onSaveMaterialPreset({
+                name: newMatName,
+                material: newMatType,
+                pricePerKg: newMatPrice,
+                totalWeightG: newMatWeight
+            })
+        ) {
+            setNewMatName('');
+            setShowNewMaterial(false);
+        }
+    };
+
+    const currentSpoolMaterial = filaments.find(f => f.id === selectedFilamentId)?.material || 'PLA';
     const summaryText = `${weightG || 0}g • ${qty} un.`;
 
     return (
@@ -98,15 +128,91 @@ export const Step2Materials = ({
 
             {!isCollapsed && (
                 <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                Filamento / Resina
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => setShowNewMaterial(prev => !prev)}
+                                className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                            >
+                                <Plus size={14} />
+                                {showNewMaterial ? 'Fechar' : 'Pré-cadastrar material'}
+                            </button>
+                        </div>
+
+                        {showNewMaterial && (
+                            <div className="grid grid-cols-1 sm:grid-cols-6 gap-2 bg-zinc-50 dark:bg-zinc-950 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                                <input
+                                    type="text"
+                                    value={newMatName}
+                                    onChange={(e) => setNewMatName(e.target.value)}
+                                    placeholder="Nome (ex: PLA Silk Ouro)"
+                                    aria-label="Nome do novo material"
+                                    className="sm:col-span-2 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 text-xs font-medium"
+                                />
+                                <select
+                                    value={newMatType}
+                                    onChange={(e) => setNewMatType(e.target.value as FilamentSpool['material'])}
+                                    aria-label="Tipo do novo material"
+                                    className="h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2.5 text-xs font-semibold"
+                                >
+                                    {MATERIAL_TYPES.map(matType => (
+                                        <option key={matType} value={matType}>{matType}</option>
+                                    ))}
+                                </select>
+                                <div className="relative">
+                                    <NumericInput
+                                        step="0.01"
+                                        min={0}
+                                        value={newMatPrice}
+                                        onValueChange={setNewMatPrice}
+                                        placeholder="120"
+                                        aria-label="Custo por kg do novo material"
+                                        className="w-full h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-2.5 pr-11 text-xs font-bold tabular-nums"
+                                    />
+                                    <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-zinc-400 select-none">
+                                        R$/kg
+                                    </span>
+                                </div>
+                                <div className="relative">
+                                    <NumericInput
+                                        integer
+                                        min={1}
+                                        emptyFallback={1000}
+                                        value={newMatWeight}
+                                        onValueChange={setNewMatWeight}
+                                        placeholder="1000"
+                                        aria-label="Peso inicial do rolo em gramas"
+                                        className="w-full h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-2.5 pr-6 text-xs font-bold tabular-nums"
+                                    />
+                                    <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-zinc-400 select-none">
+                                        g
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleQuickMaterialSubmit}
+                                    className="px-3 h-9 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-500/70 text-xs font-bold transition-colors"
+                                >
+                                    Salvar
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
+                        <div className="min-w-0">
                             <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-1">
                                 Material (Preset / Estoque)
                             </label>
                             <select
                                 value={selectedFilamentId}
+                                aria-label="Material pré-cadastrado"
                                 onChange={(e) => onSelectFilament(e.target.value)}
-                                className="w-full h-11 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950 px-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                                className="w-full min-w-0 h-11 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950 px-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                             >
                                 {filaments.map(spool => (
                                     <option key={spool.id} value={spool.id}>
@@ -116,10 +222,29 @@ export const Step2Materials = ({
                             </select>
                         </div>
 
-                        <div>
-                            <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-1">
-                                Nome Manual do Material
-                            </label>
+                        <div className="min-w-0">
+                            <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block">
+                                    Nome Manual do Material
+                                </label>
+                                {manualMaterialName.trim().length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            onSaveMaterialPreset({
+                                                name: manualMaterialName,
+                                                material: currentSpoolMaterial,
+                                                pricePerKg: materialCostPerKg
+                                            })
+                                        }
+                                        className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                                        title="Salvar nome e valor nos presets"
+                                    >
+                                        <BookmarkPlus size={12} />
+                                        Salvar nos Presets
+                                    </button>
+                                )}
+                            </div>
                             <input
                                 type="text"
                                 value={manualMaterialName}
@@ -137,13 +262,11 @@ export const Step2Materials = ({
                                 <TooltipHelp text="Preço pago pelo rolo de 1kg (1000g) ou 1L de resina. Coloque 0 se for consignado do cliente." label="Custo por kg" />
                             </label>
                             <div className="relative">
-                                <input
-                                    type="number"
-                                    inputMode="decimal"
+                                <NumericInput
                                     step="0.01"
-                                    min="0"
+                                    min={0}
                                     value={materialCostPerKg}
-                                    onChange={(e) => onMaterialCostPerKgChange(parseNumber(e.target.value))}
+                                    onValueChange={onMaterialCostPerKgChange}
                                     className="w-full h-11 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950 pl-3 pr-14 text-sm font-bold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                                 />
                                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-zinc-400 select-none">
@@ -158,13 +281,11 @@ export const Step2Materials = ({
                                 <TooltipHelp text="Informe o peso total mostrado no fatiador (incluindo suportes, brim e purge) para todas as peças na mesa." label="Peso total" />
                             </label>
                             <div className="relative">
-                                <input
-                                    type="number"
-                                    inputMode="decimal"
+                                <NumericInput
                                     step="0.01"
-                                    min="0"
-                                    value={weightG || ''}
-                                    onChange={(e) => onWeightGChange(parseNumber(e.target.value))}
+                                    min={0}
+                                    value={weightG}
+                                    onValueChange={onWeightGChange}
                                     placeholder="Ex: 16"
                                     className="w-full h-11 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950 pl-3 pr-8 text-sm font-bold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                                 />
@@ -180,12 +301,12 @@ export const Step2Materials = ({
                                 <TooltipHelp text="Quantas unidades iguais serão impressas nessa mesa/lote. O custo de material/máquina será dividido por essa quantidade." label="Quantidade" />
                             </label>
                             <div className="relative">
-                                <input
-                                    type="number"
-                                    inputMode="numeric"
-                                    min="1"
+                                <NumericInput
+                                    integer
+                                    min={1}
+                                    emptyFallback={1}
                                     value={qty}
-                                    onChange={(e) => onQtyChange(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                                    onValueChange={onQtyChange}
                                     className="w-full h-11 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 pl-3 pr-10 text-sm font-black text-emerald-800 dark:text-emerald-200 tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                                 />
                                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-emerald-600/70 dark:text-emerald-400/70 select-none">
@@ -227,14 +348,13 @@ export const Step2Materials = ({
                                 </select>
                                 <div className="grid grid-cols-[1fr_1fr_40px] sm:contents gap-2 items-center">
                                     <div className="relative">
-                                        <input
-                                            type="number"
-                                            inputMode="decimal"
+                                        <NumericInput
                                             step="0.01"
+                                            min={0}
                                             placeholder="0"
                                             aria-label={`Custo por kg do filamento adicional ${idx + 1}`}
-                                            value={mat.costPerKg ?? ''}
-                                            onChange={(e) => onUpdateAdditionalMaterial(idx, { ...mat, costPerKg: parseNumber(e.target.value) })}
+                                            value={mat.costPerKg ?? 0}
+                                            onValueChange={(val) => onUpdateAdditionalMaterial(idx, { ...mat, costPerKg: val })}
                                             className="w-full h-9 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 pl-2.5 pr-12 text-xs font-bold tabular-nums"
                                         />
                                         <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-zinc-400 select-none">
@@ -242,14 +362,13 @@ export const Step2Materials = ({
                                         </span>
                                     </div>
                                     <div className="relative">
-                                        <input
-                                            type="number"
-                                            inputMode="decimal"
+                                        <NumericInput
                                             step="0.1"
+                                            min={0}
                                             placeholder="0"
                                             aria-label={`Peso em gramas do filamento adicional ${idx + 1}`}
-                                            value={mat.weightG || ''}
-                                            onChange={(e) => onUpdateAdditionalMaterial(idx, { ...mat, weightG: parseNumber(e.target.value) })}
+                                            value={mat.weightG}
+                                            onValueChange={(val) => onUpdateAdditionalMaterial(idx, { ...mat, weightG: val })}
                                             className="w-full h-9 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 pl-2.5 pr-7 text-xs font-bold tabular-nums"
                                         />
                                         <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-zinc-400 select-none">

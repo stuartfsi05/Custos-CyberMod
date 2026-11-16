@@ -1,5 +1,22 @@
 import { createContext, useContext } from 'react';
-import { Settings, AuxiliaryCatalogItem } from '../types/settings';
+import { Settings, AuxiliaryCatalogItem, FilamentSpool, PrinterProfile } from '../types/settings';
+
+export interface UpsertFilamentPresetInput {
+    name: string;
+    material?: FilamentSpool['material'];
+    pricePerKg: number;
+    totalWeightG?: number;
+    isConsigned?: boolean;
+}
+
+export interface UpsertPrinterPresetInput {
+    name: string;
+    technology?: 'FDM' | 'SLA';
+    powerWatts: number;
+    purchasePrice: number;
+    lifespanHours: number;
+    maintenancePercent?: number;
+}
 
 export interface SettingsContextType {
     settings: Settings;
@@ -7,6 +24,8 @@ export interface SettingsContextType {
     replaceSettings: (newSettings: Settings) => void;
     deductFilamentWeight: (filamentId: string, gramsUsed: number) => void;
     upsertAuxiliaryItem: (name: string, price: number, category?: string) => AuxiliaryCatalogItem;
+    upsertFilamentPreset: (input: UpsertFilamentPresetInput) => FilamentSpool;
+    upsertPrinterPreset: (input: UpsertPrinterPresetInput) => PrinterProfile;
 }
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined);

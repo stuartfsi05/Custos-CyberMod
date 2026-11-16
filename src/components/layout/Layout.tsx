@@ -35,7 +35,7 @@ export const Layout = ({ children, activeTab, onTabChange }: LayoutProps) => {
     ];
 
     return (
-        <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors duration-300 font-sans">
+        <div className="flex flex-col min-h-screen w-full max-w-full overflow-x-clip bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors duration-300 font-sans">
             {/* Desktop Left Sidebar */}
             <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 z-40 bg-white dark:bg-zinc-900 border-r border-zinc-200/80 dark:border-zinc-800">
                 <div className="h-16 px-5 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
@@ -113,8 +113,8 @@ export const Layout = ({ children, activeTab, onTabChange }: LayoutProps) => {
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 lg:pl-64 pt-[calc(76px+env(safe-area-inset-top))] pb-[calc(110px+env(safe-area-inset-bottom))] lg:pb-10 px-4 md:px-6 w-full relative z-10">
-                <div className="max-w-7xl mx-auto">
+            <main className="flex-1 min-w-0 max-w-full overflow-x-clip lg:pl-64 pt-[calc(76px+env(safe-area-inset-top))] pb-[calc(110px+env(safe-area-inset-bottom))] lg:pb-10 px-4 md:px-6 w-full relative z-10">
+                <div className="max-w-7xl mx-auto min-w-0 w-full">
                     {children}
                 </div>
             </main>

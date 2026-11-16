@@ -13,7 +13,7 @@ import {
 } from '../hooks/usePricingEngine';
 import { useInventory, InventoryItem } from '../context/InventoryContext';
 import { useSettings } from '../context/SettingsContext';
-import { CalculatorPresetFavorite } from '../types/settings';
+import { CalculatorPresetFavorite, FilamentSpool } from '../types/settings';
 import { CostCategorySlice } from '../components/calculator/CostDonutChart';
 import { CalculatorStickySidebar } from '../components/calculator/CalculatorStickySidebar';
 import { CalculatorHeaderStepper } from '../components/calculator/CalculatorHeaderStepper';
@@ -38,7 +38,14 @@ interface CalculatorScreenProps {
 }
 
 export const CalculatorScreen = ({ onNavigate, initialItem, onClearInitialItem }: CalculatorScreenProps) => {
-    const { settings, updateSetting, deductFilamentWeight, upsertAuxiliaryItem } = useSettings();
+    const {
+        settings,
+        updateSetting,
+        deductFilamentWeight,
+        upsertAuxiliaryItem,
+        upsertFilamentPreset,
+        upsertPrinterPreset
+    } = useSettings();
     const { addToInventory } = useInventory();
 
     const hydrated = resolveInitialCalculatorState(initialItem, settings);
@@ -115,7 +122,7 @@ export const CalculatorScreen = ({ onNavigate, initialItem, onClearInitialItem }
             weightG: initialItem ? initialItem.weightG * hydrated.qty : 16,
             printTime: String(initialItem?.printTime || '1:17'),
             workTime: String(initialItem?.workTime || '0:40'),
-            shippingCost: initialItem?.costs.shipping || 0,
+            shippingCost: initialItem?.costs.shipping || '',
             customerName: initialItem?.customerName || '',
             customerDoc: initialItem?.customerDoc || '',
             customerPhone: initialItem?.customerPhone || '',
@@ -340,6 +347,47 @@ export const CalculatorScreen = ({ onNavigate, initialItem, onClearInitialItem }
         return true;
     };
 
+    const handleSaveMaterialPreset = (input: {
+        name: string;
+        material: FilamentSpool['material'];
+        pricePerKg: number;
+        totalWeightG?: number;
+    }): boolean => {
+        if (!input.name.trim()) {
+            toast.error('Informe o nome do material para pré-cadastrar.');
+            return false;
+        }
+        const saved = upsertFilamentPreset(input);
+        setSelectedFilamentId(saved.id);
+        setManualMaterialName(saved.name);
+        setMaterialCostPerKg(saved.isConsigned ? 0 : saved.pricePerKg);
+        toast.success(`Material "${saved.name}" salvo nos presets!`);
+        return true;
+    };
+
+    const handleSavePrinterPreset = (input: {
+        name: string;
+        technology: 'FDM' | 'SLA';
+        powerWatts: number;
+        purchasePrice: number;
+        lifespanHours: number;
+        maintenancePercent: number;
+    }): boolean => {
+        if (!input.name.trim()) {
+            toast.error('Informe o nome da máquina para pré-cadastrar.');
+            return false;
+        }
+        const saved = upsertPrinterPreset(input);
+        setSelectedPrinterId(saved.id);
+        setManualPrinterName(saved.name);
+        setPowerWatts(saved.powerWatts);
+        setMachineValue(saved.purchasePrice);
+        setLifespanHours(saved.lifespanHours);
+        setMaintenancePercent(saved.maintenancePercent);
+        toast.success(`Máquina "${saved.name}" salva nos presets!`);
+        return true;
+    };
+
     const handleAddAdditionalMaterial = () => {
         const fallback = settings.filaments[0];
         setAdditionalMaterials(prev => [
@@ -465,7 +513,25 @@ export const CalculatorScreen = ({ onNavigate, initialItem, onClearInitialItem }
         setSelectedAuxItems([]);
         setDiscountValue(0);
         setQuoteItems([]);
-        reset();
+        reset({
+            partName: 'Projeto',
+            weightG: 0,
+            printTime: '0:00',
+            workTime: '0:40',
+            shippingCost: '',
+            customerName: '',
+            customerDoc: '',
+            customerPhone: '',
+            customerEmail: '',
+            addressCep: '',
+            addressStreet: '',
+            addressNumber: '',
+            addressComplement: '',
+            addressNeighborhood: '',
+            addressCity: '',
+            addressState: '',
+            notes: ''
+        });
         onClearInitialItem?.();
         toast.info('Campos da calculadora limpos.');
     };
@@ -631,7 +697,7 @@ export const CalculatorScreen = ({ onNavigate, initialItem, onClearInitialItem }
             : pricing.batchSellPrice;
 
     return (
-        <div className="space-y-5 pb-40 lg:pb-16">
+        <div className="space-y-5 pb-40 lg:pb-16 w-full max-w-full min-w-0 overflow-x-clip">
             <input
                 ref={gcodeInputRef}
                 type="file"
@@ -649,9 +715,9 @@ export const CalculatorScreen = ({ onNavigate, initialItem, onClearInitialItem }
             />
 
             {/* Split-View Main Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start min-w-0 w-full">
                 {/* LEFT COLUMN: 5 Continuous Form Sections */}
-                <div className="lg:col-span-7 space-y-6">
+                <div className="lg:col-span-7 min-w-0 space-y-6">
                     <Step1ProjectInfo
                         onFocusStep={() => setActiveStep(1)}
                         photoUrl={photoUrl}
@@ -696,6 +762,7 @@ export const CalculatorScreen = ({ onNavigate, initialItem, onClearInitialItem }
                         }
                         deductStockOnSave={deductStockOnSave}
                         onDeductStockOnSaveChange={setDeductStockOnSave}
+                        onSaveMaterialPreset={handleSaveMaterialPreset}
                     />
 
                     <Step3Equipment
@@ -718,6 +785,7 @@ export const CalculatorScreen = ({ onNavigate, initialItem, onClearInitialItem }
                         lifespanHours={lifespanHours}
                         onLifespanHoursChange={setLifespanHours}
                         maintenancePercent={maintenancePercent}
+                        onSavePrinterPreset={handleSavePrinterPreset}
                     />
 
                     <Step4OperationalCosts

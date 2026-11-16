@@ -1,6 +1,7 @@
 import { ArrowDown, ShoppingBag } from 'lucide-react';
 import { clsx } from 'clsx';
 import { formatCurrency } from '../../utils/formatters';
+import { getMarginHealthStatus } from '../../hooks/usePricingEngine';
 
 interface CalculatorMobileBarProps {
     unitSellPrice: number;
@@ -27,7 +28,13 @@ export const CalculatorMobileBar = ({
         unitProductionCost > 0
             ? (unitProfit / unitProductionCost) * 100
             : markupPercent;
-    const isHealthyMargin = unitProfit > 0 && netReturnOnCostPct >= 79.99;
+    const marginHealth = getMarginHealthStatus(unitProfit, netReturnOnCostPct);
+    const badgeColorMap = {
+        loss: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+        tight: 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300',
+        competitive: 'bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300',
+        healthy: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
+    } as const;
 
     return (
         <div className="lg:hidden fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 right-3 z-30 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl rounded-2xl px-3.5 py-2.5 border border-emerald-200/90 dark:border-emerald-900/60 shadow-2xl shadow-black/15 flex items-center justify-between gap-2.5">
@@ -40,12 +47,10 @@ export const CalculatorMobileBar = ({
                     <span
                         className={clsx(
                             'px-1.5 py-0.5 rounded-full text-[9px] font-black shrink-0',
-                            isHealthyMargin
-                                ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
-                                : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
+                            badgeColorMap[marginHealth.level]
                         )}
                     >
-                        {isHealthyMargin ? 'Saudável' : 'Apertada'}
+                        {marginHealth.shortLabel}
                     </span>
                 </div>
                 <p className="text-[10px] font-bold text-cyan-700 dark:text-cyan-400 tabular-nums truncate">

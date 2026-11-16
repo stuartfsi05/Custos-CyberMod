@@ -1,43 +1,98 @@
-import React, { InputHTMLAttributes, forwardRef } from 'react';
+import React, { ChangeEvent, FocusEvent, InputHTMLAttributes, forwardRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { LucideIcon } from 'lucide-react';
+import { NumericInput } from './NumericInput';
+import { sanitizeNumericInputString } from '../../utils/formatters';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     label?: string;
     error?: string;
     icon?: LucideIcon;
+    integer?: boolean;
+    emptyFallback?: number;
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(({ className, label, error, icon: Icon, ...props }, ref) => {
-    return (
-        <div className="space-y-2 group/field">
-            {label && (
-                <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 group-focus-within/field:text-emerald-500 transition-colors ml-1">
-                    {label}
-                </label>
-            )}
-            <div className="relative group transition-all duration-300">
-                {Icon && (
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-emerald-500 transition-colors duration-300 z-10">
-                        <Icon size={18} className="transition-transform group-focus-within:scale-110" />
-                    </div>
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+    ({ className, label, error, icon: Icon, type, value, placeholder, onFocus, onChange, min, max, integer, emptyFallback, ...props }, ref) => {
+        const inputClasses = twMerge(
+            "flex h-12 w-full rounded-2xl border border-zinc-200 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/50 backdrop-blur-sm px-4 py-2 text-sm font-medium ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 focus-visible:bg-white dark:focus-visible:bg-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-300 shadow-sm hover:border-emerald-300 dark:hover:border-emerald-700/50",
+            Icon && "pl-11",
+            error && "border-red-500/50 focus-visible:ring-red-500/30 focus-visible:border-red-500 bg-red-50/10",
+            className
+        );
+
+        const isControlledNumber = type === 'number' && typeof value === 'number';
+        const isNumberInput = type === 'number';
+
+        const handleUncontrolledFocus = (e: FocusEvent<HTMLInputElement>) => {
+            if (isNumberInput && e.currentTarget.value === '0') {
+                e.currentTarget.value = '';
+            }
+            onFocus?.(e);
+        };
+
+        const handleUncontrolledChange = (e: ChangeEvent<HTMLInputElement>) => {
+            if (isNumberInput) {
+                const cleaned = sanitizeNumericInputString(e.target.value);
+                if (cleaned !== e.target.value) {
+                    e.currentTarget.value = cleaned;
+                    e.target.value = cleaned;
+                }
+            }
+            onChange?.(e);
+        };
+
+        const parsedMin = min !== undefined ? Number(min) : undefined;
+        const parsedMax = max !== undefined ? Number(max) : undefined;
+
+        return (
+            <div className="space-y-2 group/field">
+                {label && (
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 group-focus-within/field:text-emerald-500 transition-colors ml-1">
+                        {label}
+                    </label>
                 )}
-                <input
-                    className={twMerge(
-                        "flex h-12 w-full rounded-2xl border border-zinc-200 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/50 backdrop-blur-sm px-4 py-2 text-sm font-medium ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 focus-visible:bg-white dark:focus-visible:bg-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-300 shadow-sm hover:border-emerald-300 dark:hover:border-emerald-700/50",
-                        Icon && "pl-11",
-                        error && "border-red-500/50 focus-visible:ring-red-500/30 focus-visible:border-red-500 bg-red-50/10",
-                        className
+                <div className="relative group transition-all duration-300">
+                    {Icon && (
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-emerald-500 transition-colors duration-300 z-10">
+                            <Icon size={18} className="transition-transform group-focus-within:scale-110" />
+                        </div>
                     )}
-                    ref={ref}
-                    {...props}
-                />
+                    {isControlledNumber ? (
+                        <NumericInput
+                            className={inputClasses}
+                            ref={ref}
+                            value={value}
+                            min={Number.isFinite(parsedMin) ? parsedMin : undefined}
+                            max={Number.isFinite(parsedMax) ? parsedMax : undefined}
+                            integer={integer}
+                            emptyFallback={emptyFallback}
+                            placeholder={placeholder ?? '0'}
+                            onFocus={onFocus}
+                            onChange={onChange}
+                            {...props}
+                        />
+                    ) : (
+                        <input
+                            type={type}
+                            className={inputClasses}
+                            ref={ref}
+                            value={value}
+                            min={min}
+                            max={max}
+                            placeholder={isNumberInput ? (placeholder ?? '0') : placeholder}
+                            onFocus={handleUncontrolledFocus}
+                            onChange={handleUncontrolledChange}
+                            {...props}
+                        />
+                    )}
+                </div>
+                {error && (
+                    <p className="text-xs text-red-500 font-bold ml-1 animate-in slide-in-from-top-1 fade-in duration-200">{error}</p>
+                )}
             </div>
-            {error && (
-                <p className="text-xs text-red-500 font-bold ml-1 animate-in slide-in-from-top-1 fade-in duration-200">{error}</p>
-            )}
-        </div>
-    );
-});
+        );
+    }
+);
 
 Input.displayName = "Input";

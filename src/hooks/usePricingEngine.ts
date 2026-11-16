@@ -209,6 +209,29 @@ export function calculate3DPricing(input: AdvancedPricingInput): AdvancedPricing
     };
 }
 
+export interface MarginHealthInfo {
+    level: 'loss' | 'tight' | 'competitive' | 'healthy';
+    label: string;
+    shortLabel: string;
+}
+
+/**
+ * Classifies profit margin health based on net return over production cost (%).
+ * Standard (40%+), Premium (60%) and Luxury (80%+) are healthy; 25%-39.9% is competitive.
+ */
+export function getMarginHealthStatus(unitProfit: number, netReturnOnCostPct: number): MarginHealthInfo {
+    if (unitProfit <= 0) {
+        return { level: 'loss', label: 'Sem lucro / Prejuízo', shortLabel: 'Sem lucro' };
+    }
+    if (netReturnOnCostPct < 24.99) {
+        return { level: 'tight', label: 'Margem apertada', shortLabel: 'Apertada' };
+    }
+    if (netReturnOnCostPct < 39.99) {
+        return { level: 'competitive', label: 'Margem competitiva', shortLabel: 'Competitiva' };
+    }
+    return { level: 'healthy', label: 'Margem saudável', shortLabel: 'Saudável' };
+}
+
 // Legacy hook preserved for EditItemDialog compatibility
 interface PricingEngineInputs {
     weightG: number | string;

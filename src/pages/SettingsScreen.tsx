@@ -1,6 +1,7 @@
 import { useSettings } from '../context/SettingsContext';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
+import { NumericInput } from '../components/ui/NumericInput';
 import { Textarea } from '../components/ui/Textarea';
 import { TEXTS } from '../constants/texts';
 import {
@@ -193,14 +194,13 @@ export const SettingsScreen = () => {
                                 <div className="grid grid-cols-2 gap-3 text-xs">
                                     <div>
                                         <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 block mb-1">Comissão (%)</span>
-                                        <input
-                                            type="number"
-                                            inputMode="decimal"
+                                        <NumericInput
                                             step="0.01"
+                                            min={0}
                                             value={channel.commissionPercent}
-                                            onChange={(e) => {
+                                            onValueChange={(val) => {
                                                 const next = [...settings.marketplaces];
-                                                next[index] = { ...channel, commissionPercent: parseNumber(e.target.value) };
+                                                next[index] = { ...channel, commissionPercent: val };
                                                 updateSetting('marketplaces', next);
                                             }}
                                             className="w-full h-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3 text-sm font-bold tabular-nums"
@@ -208,14 +208,13 @@ export const SettingsScreen = () => {
                                     </div>
                                     <div>
                                         <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 block mb-1">Taxa Fixa (R$)</span>
-                                        <input
-                                            type="number"
-                                            inputMode="decimal"
+                                        <NumericInput
                                             step="0.01"
+                                            min={0}
                                             value={channel.fixedFee}
-                                            onChange={(e) => {
+                                            onValueChange={(val) => {
                                                 const next = [...settings.marketplaces];
-                                                next[index] = { ...channel, fixedFee: parseNumber(e.target.value) };
+                                                next[index] = { ...channel, fixedFee: val };
                                                 updateSetting('marketplaces', next);
                                             }}
                                             className="w-full h-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3 text-sm font-bold tabular-nums"

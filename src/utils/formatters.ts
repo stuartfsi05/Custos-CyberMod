@@ -101,3 +101,11 @@ export const formatPhone = (value: string | undefined): string => {
     // Fallback if length is weird, just return digits or minimal formatting if possible
     return digits;
 };
+
+/**
+ * Removes leading zeros before digits (e.g. "03" -> "3", "030" -> "30")
+ * while preserving single "0", decimals ("0.5", "0,5"), and empty string "".
+ */
+export const sanitizeNumericInputString = (raw: string): string => {
+    return raw.replace(/^(-?)0+(?=\d)/, '$1');
+};

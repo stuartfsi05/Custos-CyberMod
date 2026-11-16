@@ -12,6 +12,7 @@ import {
 import { useSettings } from '../../context/SettingsContext';
 import { calculate3DPricing, usePricingEngine } from '../../hooks/usePricingEngine';
 import { Input } from '../ui/Input';
+import { NumericInput } from '../ui/NumericInput';
 import { Button } from '../ui/Button';
 import { clsx } from 'clsx';
 import { formatCurrency, parseNumber } from '../../utils/formatters';
@@ -121,7 +122,7 @@ const EditItemDialogBody = ({ item, onOpenChange }: EditItemDialogBodyProps) => 
             weightG: item.weightG,
             printTime: String(item.printTime),
             workTime: String(item.workTime),
-            shippingCost: item.costs.shipping || 0,
+            shippingCost: item.costs.shipping || '',
             customerName: item.customerName || '',
             customerDoc: item.customerDoc || '',
             customerPhone: item.customerPhone || '',
@@ -284,7 +285,9 @@ const EditItemDialogBody = ({ item, onOpenChange }: EditItemDialogBodyProps) => 
                             label="Qtd"
                             type="number"
                             inputMode="numeric"
-                            min="1"
+                            integer
+                            min={1}
+                            emptyFallback={1}
                             value={qty}
                             onChange={(e) => setQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
                         />
@@ -375,13 +378,11 @@ const EditItemDialogBody = ({ item, onOpenChange }: EditItemDialogBodyProps) => 
                                 onChange={(e) => setCustomMarkup(parseNumber(e.target.value))}
                                 className="flex-1 accent-emerald-600"
                             />
-                            <input
-                                type="number"
-                                inputMode="decimal"
-                                min="0"
+                            <NumericInput
+                                min={0}
                                 step="5"
                                 value={customMarkup}
-                                onChange={(e) => setCustomMarkup(Math.max(0, parseNumber(e.target.value)))}
+                                onValueChange={(val) => setCustomMarkup(Math.max(0, val))}
                                 className="w-20 h-8 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-zinc-900 px-2 text-xs font-black text-right tabular-nums"
                             />
                         </div>
