@@ -1,0 +1,1 @@
+import{j as s}from"./vendor-ui-C_sVKnh4.js";import{t}from"./index-CgnErE9F.js";const d=({children:r,className:o,...a})=>s.jsx("div",{className:t("glass-card rounded-2xl p-5 transition-all duration-300 hover:shadow-xl hover:bg-white/60 dark:hover:bg-zinc-900/60",o),...a,children:r});export{d as C};

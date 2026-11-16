@@ -1,0 +1,1 @@
+const T={APP:{INVENTORY:"Pedidos & Fila",SETTINGS:"Ajustes"},INVENTORY:{EMPTY_STATE:"Nenhum item encontrado.",TRASH_WARNING:"Itens na lixeira são removidos após 7 dias.",BTN_CLEAR_TRASH:"Esvaziar Lixeira"}};export{T};
